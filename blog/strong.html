@@ -1,0 +1,76 @@
+<html>
+ <head>
+<title>Icectf reverseing</title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> RE </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> IceCTF : a_strong_feeling writeup (Reverse-Engineering) </h1>
+   
+ <br> 
+
+<p> ok This one was 64-bit stripped binary and main fun contains 1280 lines !!! ida & gdb refused me to help <br>
+    <h2> but i love r2 <3 </h2> it just printed out the flag ...<br>
+         there was cmp edx,0x61 kind of instruction between those huge lines but luckily radare2 gave char by char flag to me :) <br>
+         the flag was <b> IceCTF{pip_install_angr} </b> </p> <br> <br>
+<p> Adding greatness to radare2 the previous re question in this ctf was too ... easily solvable using r2 </p>
+</body>
+</html>

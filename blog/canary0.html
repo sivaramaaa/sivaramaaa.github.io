@@ -1,0 +1,149 @@
+<html>
+ <head>
+<title> Canary0  </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Canary0 </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title">  ***Smash Stacking Detected *** </h1>
+   
+ <br> 
+
+<p> I came across my senior blog and found out  how does the canary work in Linux Glibc. Later i started working on it with a small HelloWorld program which has canary enabled. </p>
+
+<code> 
+#include
+int main(){
+printf("Hello World\n");
+return 0;
+}
+ </code>
+
+<p>  Complied it with Canary enabled.</p>
+
+<code> gcc -m32 -fstack-protector-all hello.c -o hello  </code>
+
+<p> Looking at the disassembly part. </p>
+
+<code> Dump of assembler code for function main:
+1   0x0804846d <+0>:	push   ebp
+2   0x0804846e <+1>:	mov    ebp,esp
+3   0x08048470 <+3>:	and    esp,0xfffffff0
+4   0x08048473 <+6>:	sub    esp,0x20
+5   0x08048476 <+9>:	mov    eax,gs:0x14
+6   0x0804847c <+15>:	mov    DWORD PTR [esp+0x1c],eax
+7   0x08048480 <+19>:	xor    eax,eax
+8   0x08048482 <+21>:	mov    DWORD PTR [esp],0x8048540
+9   0x08048489 <+28>:	call   0x8048340 <puts@plt>
+10  0x0804848e <+33>:	mov    eax,0x0
+11  0x08048493 <+38>:	mov    edx,DWORD PTR [esp+0x1c]
+12  0x08048497 <+42>:	xor    edx,DWORD PTR gs:0x14
+13  0x0804849e <+49>:	je     0x80484a5 <main+56>
+14  0x080484a0 <+51>:	call   0x8048330 <__stack_chk_fail@plt>
+15  0x080484a5 <+56>:	leave  
+16  0x080484a6 <+57>:	ret     </code>
+
+<p>  When you look at line 5 you could see that some value from global section is moved to $eax and in the next line it is pushed on to the stack. Which is some random value.
+
+ <br> Than after the “print” operation there is check of canary value that can be seen in line 11, 12 in the case of same value it is moved to 15th line and then return the program normally. if not   “__stack_chk_fail@plt” library routine is beginning called through the PLT. Lets see what does that function contain.
+
+ <br> </p>
+
+<code>  #include 
+#include 
+ 
+extern char **__libc_argv attribute_hidden;
+ 
+void
+__attribute__ ((noreturn))
+__stack_chk_fail (void)
+{
+  __fortify_fail ("stack smashing detected");
+}
+ </code>
+
+<p> I found this source code form GNU C Library at debug/stack_chk_fail.c Even you can find it from this link <br>
+
+So this code simply calls __fortify_fail with argument “smash the stack”. In the same GNU library i also found fortify_fail.c </p>
+
+<code> #include 
+#include 
+extern char **__libc_argv attribute_hidden;
+void
+__attribute__ ((noreturn)) internal_function
+__fortify_fail (const char *msg)
+{
+  /* The loop is added only to keep gcc happy.  */
+  while (1)
+    __libc_message (2, "*** %s ***: %s terminated\n",
+		    msg, __libc_argv[0] ?: "");
+}
+libc_hidden_def (__fortify_fail) </code>
+
+<h2> Ok after learning this how about to exploit it !!!!!! </h2>
+
+<p> Ok so the vulnerable part her is this technique does not prevent overflow it just terminates after overflow and The fishy part here is it displays argv[0] <br>
+     after the message ***Stack smashing detected**** so by now u would have gused the vulnerability !! Yeah you have to overflow argv[0] and write it with the "flag" <br>
+     address & thats it :) </p>
+
+
+</body>
+</html>

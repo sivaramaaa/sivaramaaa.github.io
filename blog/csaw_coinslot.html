@@ -1,0 +1,175 @@
+<html>
+ <head>
+<title> Coinslot writeups  </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> CSAW </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> [MISC] COINSLOT </h1>
+   
+ <br> 
+
+<p> This one is my first Programming challenge which i solved .....  it' a quite messed up code but bar with me !!!</p>
+
+<code>from pwn import *
+
+def calcchange(payamt):
+        change = payamt
+        cents = change*100+0.01
+        dollars = int(cents /100)
+        cents = cents %100
+        half=int(cents/50)
+        cents=cents %50
+        quarters = int(cents/25)
+        cents = cents %25
+        dimes = int(cents/10)
+        cents = cents %10
+        nickels = int(cents/5)
+        cents = cents %5
+        pennies = int(cents)
+        _10000doll=int(dollars/10000)
+        bal=dollars %10000
+        _5000doll=int(bal/5000)
+        bal=bal %5000
+        _1000doll=int(bal/1000)
+        bal=bal %1000
+        _500doll=int(bal/500)
+        bal=bal %500
+        _100doll=int(bal/100)
+        bal=bal %100
+        _50doll=int(bal/50)
+        bal=bal %50
+        _20doll=int(bal/20)
+        bal=bal %20
+        _10doll=int(bal/10)
+        bal=bal %10
+        _5doll=int(bal/5)
+        bal= bal %5
+        _1doll=int(bal/1)
+        return change,dollars,half,quarters, dimes, nickels, pennies,_10000doll,_5000doll,_1000doll,_500doll,_100doll,_50doll,_20doll,_10doll,_5doll,_1doll
+
+
+
+        
+i=0
+r=remote('misc.chal.csaw.io',8000)
+while(1):
+  print "Entering %d level" % i
+  if i == 400 :
+     msg=r.recvall()
+     print msg
+      
+  msg=r.recvuntil('$')
+  print msg
+  val=r.recvuntil("\n")
+  print val
+  payamt = float(val)
+  change, dollars,half,quarters, dimes, nickels, pennies,_10000doll,_5000doll,_1000doll,_500doll,_100doll,_50doll,_20doll,_10doll,_5doll,_1doll=calcchange(payamt)
+  msg=r.recvuntil('$10,000 bills:')
+  print msg
+  r.send(str(_10000doll)+"\n")
+  msg=r.recvuntil('$5,000 bills:')
+  print msg
+  r.send(str(_5000doll)+"\n")
+  msg=r.recvuntil('$1,000 bills:')
+  print msg
+  r.send(str(_1000doll)+"\n")
+  msg=r.recvuntil('$500 bills:')
+  print msg
+  r.send(str(_500doll)+"\n")
+  msg=r.recvuntil('$100 bills:')
+  print msg
+  r.send(str(_100doll)+"\n")
+  msg=r.recvuntil('$50 bills:')
+  print msg
+  r.send(str(_50doll)+"\n")
+  msg=r.recvuntil('$20 bills:')
+  print msg
+  r.send(str(_20doll)+"\n")
+  msg=r.recvuntil('$10 bills:')
+  print msg 
+  r.send(str(_10doll)+"\n")
+  msg=r.recvuntil('$5 bills:') 
+  print msg
+  r.send(str(_5doll)+"\n")
+  msg=r.recvuntil('$1 bills:')
+  print msg 
+  r.send(str(_1doll)+"\n")
+  msg=r.recvuntil('half-dollars (50c):')
+  print msg
+  r.send(str(half)+"\n")
+  msg=r.recvuntil('quarters (25c):')
+  print msg
+  r.send(str(quarters)+"\n")
+  msg=r.recvuntil('dimes (10c):')
+  print msg
+  r.send(str(dimes)+"\n")
+  msg=r.recvuntil('nickels (5c):')
+  print msg
+  r.send(str(nickels)+"\n")
+  msg=r.recvuntil('pennies (1c):')
+  print msg
+  r.send(str(pennies)+"\n")
+  i=i+1   </code>
+
+
+</body>
+</html>

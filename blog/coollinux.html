@@ -1,0 +1,88 @@
+<html>
+ <head>
+<title> Cool linux command  </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> >_ </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> The Unix way  </h1>
+   
+ <br> 
+
+<p> <b> 1) To make mirror of a website using Wget </b> </p> <br>
+ <p> <code>wget --mirror --convert-links --adjust-extension --page-requisites 
+--no-parent http://example.org </code> <br><br>
+
+Explanation of the various flags: <br><br>
+
+    --mirror – Makes (among other things) the download recursive. <br><br>
+    --convert-links – convert all the links (also to stuff like CSS stylesheets) to relative, so it will be suitable for offline viewing. <br><br>
+    --adjust-extension – Adds suitable extensions to filenames (html or css) depending on their content-type. <br><br>
+    --page-requisites – Download things like CSS style-sheets and images required to properly display the page offline.  <br><br>
+    --no-parent – When recursing do not ascend to the parent directory. It useful for restricting the download to only a portion of the site. <br><br>
+
+Alternatively, the command above may be shortened: <br><br>
+
+<code>wget -mkEpnp "www.hackerbuck.net23.net" --user-agent="Mozilla/5.0  Gecko/20070725 Firefox/2.0.0.6"</code> <br> </p>
+
+
+</body>
+</html>

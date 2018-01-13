@@ -1,0 +1,108 @@
+<html>
+ <head>
+<title> PyGdb </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> PyGdb </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Gdb Scrippting </h1>
+   
+ <br> 
+
+<p>
+For a long a time i was waiting to learn Gdb scriptting today i got a chance to start with it , <br>
+The given binary was taking the flag as argument , and checking it byte-by-byte so i wrote  a script that bruteforce char by char <br>
+and to run the script gdb -x script.pt ./bin
+</p>
+
+<code>
+import gdb 
+
+
+keyspace = list("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#%&()+,-.:;_{|}~ ")
+
+gdb.execute("set pagination off")
+flag = ""
+gdb.execute("b main",True,True)
+gdb.execute("b *0x80485cc",True,True)
+
+for i in range(43):
+	for char in keyspace:
+		gdb.execute("r ",True,True)
+		gdb.execute("set $eip=0x080485c2",True,True)
+		gdb.execute("si",True,True)
+		gdb.execute("set $eax="+hex(ord(char)),True,True)
+		gdb.execute("set $edx="+str(i),True,True)
+		gdb.execute("c ",True,True)
+		eax = gdb.execute("p/d $eax",True,True)
+		eax = int(eax.split("=")[1])                
+		if eax == 1 :
+			flag+=char
+			print("[+] "+flag)
+			break
+
+
+
+</code>
+
+
+</body>
+</html>

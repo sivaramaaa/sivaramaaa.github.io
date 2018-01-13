@@ -1,0 +1,68 @@
+<html>
+ <head>
+<title> Integer Overflow </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+p 
+     { color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+       line-height: 2.2;
+      letter-spacing: 4px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+       margin-right: 150px;
+       margin-left: 150px;
+      
+      }
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+
+</style>
+<body>
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Integer overflow </p>
+ </div>
+ </div>
+
+<main class="content" role="main">
+
+        <header class="post-header">
+          <br><br><br>
+            <h1 class="post-title"> Integer overflow  </h1>
+        </header>
+ 
+<section class="post-content">
+
+<p> Ok a small vulnerability called integer overflow had caused a lot of problem . Before seeing that Problems let me tell u what is integer overflow
+ in C language int is by default signed 32 bit integer which means it can hold only value in range +2147483647 to -2147483648 if u store more than 
+ this compiler would wrap-around  i.e it again starts counting from min value  that's all about integer overflow let's see the problem caused by it
+  <br> <br> <br>1. Year 2038 problem( Unix Millennium Bug)
+   <br> Most of Unix like operating system stores time_t in a 32 bit integer so at Tuesday, 19 January 2038 all 32-bit system will start showing negative numbers
+  <br> <br> <br> 2. Pay pal error
+  <br> An error in the PayPal payment system in July 2013 accidentally credited $92 quadrillion to the account of Chris Reynolds. (The exact amount credited was US$92,233,720,368,547,940.25 to a final balance of US$92,233,720,368,547,800.00.) PayPal corrected the error, and offered to make a donation to a charity of Reynolds' choice.
+  <br><br> <br> 3.  Youtube breakdown!!  
+<br> "We never thought a video would be watched in numbers greater than a 32-bit integer (=2,147,483,647 views), but that was before we met PSY," wrote Google, which owns YouTube, in a blog post this week. " 'Gangnam Style' has been viewed so many times we have to upgrade!  </p>
+</section>
+
+
+</body>
+</html>

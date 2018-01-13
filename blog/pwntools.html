@@ -1,0 +1,105 @@
+<html>
+ <head>
+<title> Pwntools </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Python Scripting  </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> PwnPy </h1>
+   
+ <br> 
+
+<p> Ok a quick look into pwn library : </p>
+<code> 
+<p> The Obvious one :</p>
+
+from pwn import *
+
+context.bits=32
+ 
+<p>Helpers for many common tasks  p.sendline(),p.recvline, p.recvuntil(':'),pack()</p>
+<p> 1. To ssh into a machine </p>
+s=ssh(host='challenge02.root-me.org',user='app-systeme-ch15',password='app-systeme-ch15',port=2222)
+p=s.process('./ch15')
+
+<p> 2. To connect remotely : </p>
+
+r=remote('127.0.0.1',8888)
+<p> 3. passing as an argument :</p>
+
+p=process(['level2',payload])
+
+<p> To specify no of bytes to unpack </p>
+
+context.bits=len(a)*8
+<p> 4. To generate Your own shellcode </p>
+Shellcode=asm(shellcraft.i386.linux.cat("flag"))
+<p> 5 TO use libc for Ret2libc attack </p>
+	libc = ELF(libcfilename);
+	libc.address= leak- libc.symbols['atoi'];
+	system = libc.symbols['system']
+	binsh =  libc.search("/bin/sh").next()
+ </code>
+
+
+
+</body>
+</html>

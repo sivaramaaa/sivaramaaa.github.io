@@ -1,0 +1,102 @@
+<html>
+ <head>
+<title> TWCTF-writeup </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+h2{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Twctf </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> TWCTF Writeups  </h1>
+   
+ <br>
+
+<h2> 1. Global page [WEB] </h2>  <br>
+
+<p>  Ok the website given displayed some error that   cannot include(..) *** so i figured out it was  Local File Inclusion vulnerability (LFI) <br><br>
+      i tried ../../etc/passwd but then '.' and '/' were removed and /en-us.php was added then i tried %00 null-byte injection still no luck <br><br>
+      then my senior guided me to look for request .. in HTTP headers that was sent had "Accept-lang:en-us" so this was injection point <br><br>
+      but still i was unable to access any of the pages then i opted for PHP wraper . i got index.php and then flag.php in base-64 encoded decode and get the flag   </p>
+<p><b> NOTE: to do all this CURL was the best !!!</b></p><br>
+<p><b>  ?page=php://filter/convert.base64-encode/resource=index.php</b></p>
+
+
+<br>
+
+<code>curl -H "Accept-Language: /filter/convert.base64-encode/resource=index,en;q=0.5" -H "User-Agent: Mozilla/5.0 ...."  http://globalpage.chal.ctf.westerns.tokyo/?page=php:
+      # TWCTF{I_found_simple_LFI} (the decoded one )</code>
+
+
+<h2> 2. ninth (STEG) </h2>
+
+<p> We were given a image and i tried all the tool i had except .. <b>binwalk</b> but the sol was to use binwalk .. running binwalk you will see nothing other than png and Zlib <br>
+    compressed so we have to extract the Zlib data and run stings on it tadaa flag !!</p>
+
+</body>
+</html>

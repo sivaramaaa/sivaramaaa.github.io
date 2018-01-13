@@ -1,0 +1,117 @@
+<html>
+ <head>
+<title> Heap_101 </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+   ul{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Heap </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Heap Structures </h1>
+   
+ <br> 
+
+<p> First we shall see what is chunk and it's structure  . <br>
+    Heap chunk exist's in 2 states <br>
+    <ul> <li> In use (malloc’d) </li> 
+          <li> free'd </li>
+
+    </ul>
+
+    The following is Doug Lea’s idea of the heap structure using malloc and free :  <br>
+     </p>
+
+<img src="doug_lea_heap.png" alt="" style="width:497px;height:343px;"><br>
+
+<p> In <b>"In-use"</b> state  when we do malloc(15) the no of memory allocated is 15+4(for size chunk)+4(prev size of free chunk)+1(for alignment ) <br>
+    the size chunk is always multiple of 8 coz the last 3 bits are used as flags (refer above image) <br> <br>
+     </p>
+
+<p> Free'd state chunk has additional  8 bytes Forward ptr and a Backward ptr to next free chunk <br> <br>
+    There  are two other really important fields: top and bins. The top field is a chunk of memory (the fundamental element of the allocator) and it’s where the data for   
+     which the space has been allocated are going to be stored. Each chunk in this is a memory fragment that can be allocated. <br><br> At the beginning, there’s only one big chunk 
+     in the arena (called wilderness), which is pointed by the top field itself: this chunk is always free and its size represents the free space of the arena.  <br><br>
+     Also it marks the end of the available space of the arena. <br>
+
+  The bins array is composed by double-linked lists to chunks that were allocated and that were successively freed (this means that, at the beginning, all the bins  
+  are empty). <br><br> Each bin stores a list of chunks of specified size in order to allow the allocator to easily search for a free chunk, given the size <br>
+  the research will be performed by starting looking for the smallest and best-fitting one.  </p>
+
+<img src="bins-and-chucks.jpg" alt="" style="width:497px;height:343px;"><br> <br>
+
+<p> So here comes the <b>working</b> of all ..... <br> <br>
+    When a malloc is intially called it allocates memory from top chunk that is the top chunks gets split into 2 . <br>
+    Now when free() is called it checks the size of chunk and if it is small it gets into fast-bin and if it is large it gets merged to top-chunk . <br> <br>
+    Now again if malloc is called it checks in the fast-bin if found that memory is used else it get's mem from top-chunk  . </p>
+
+
+</body>
+</html>

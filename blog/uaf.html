@@ -1,0 +1,161 @@
+<html>
+ <head>
+<title> Uaf </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:1.5em;"> Free me :( </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Use-after Vulnerability </h1>
+   
+ <br> 
+
+<p> The UAF vuln happens when there exists a pointer which points to heap data even after it is free'd and the pointer is used after it .<br>
+    So now we control the area when we have  another call to  malloc().  </p>
+
+<code>
+#include &ltstdlib.h&gt
+#include &ltunistd.h&gt
+#include &ltstring.h&gt
+#include &ltstdlib.h&gt
+#include &ltunistd.h&gt
+#include &ltstring.h&gt
+#include &ltsys/types.h&gt
+#include &ltstdio.h&gt
+
+struct toystr 
+  {
+     int (*fp)();
+    char buffer[100];
+  };
+
+void winner()
+{
+  printf("level passed\n");
+}
+
+void nowinner()
+{
+  printf("level has not been passed\n");
+}
+
+void main(int arc , char **argv)
+{  struct toystr *coolguy;
+   char  *service;
+   coolguy = malloc(sizeof(struct toystr));
+   coolguy->fp = &nowinner;
+   coolguy->fp();
+
+  free(coolguy);
+  service = strdup(argv[1]);
+  coolguy->fp();
+
+   
+}
+#include <stdio.h>
+
+struct toystr 
+  {
+     int (*fp)();
+    char buffer[100];
+  };
+
+void winner()
+{
+  printf("level passed\n");
+}
+
+void nowinner()
+{
+  printf("level has not been passed\n");
+}
+
+void main(int arc , char **argv)
+{  struct toystr *coolguy;
+   char  *service;
+   coolguy = malloc(sizeof(struct toystr));
+   coolguy->fp = &nowinner;
+   coolguy->fp();
+
+  free(coolguy);
+  service = strdup(argv[1]);
+  coolguy->fp();
+
+   
+}
+
+</code>
+
+<br><br>
+
+<p> So u could look above in the code the pointer coolguy is used to funtion ptr even after it is free'd . <br>
+   So after free we have strdup which basically call malloc of size of string . And copies that to allocated memory (which used to be area of toystr) now we copie our req <br>
+   address which then called by coolguy (actually poor guy :P ) </p> <br> <br>
+
+<p> <b> But there is one catchy point here  as our toystr chunk is small after free it gets into fast-bin so only if malloc size (strlen+8) is equal to chunk size we could <br>
+    get the control of free'd memory  chunk </b>  </p>
+
+
+<code>
+payload = &winner+"A"*12
+</code>
+
+</body>
+</html>

