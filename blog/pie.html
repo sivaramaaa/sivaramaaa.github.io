@@ -6,7 +6,18 @@
  <link rel="stylesheet" type="text/css" href="fonts.css" />
 </head>
 <style>
-
+.top {
+background-color:black;
+background-image:
+radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px),
+radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px);
+background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px; 
+background-position: 0 0, 40px 60px, 130px 270px, 70px 100px;
+width:100%
+height:40%
+}
       body {background-color:white;
 	border-bottom:1px solid #bfbfbf
          line-height:1.5em;
@@ -54,7 +65,7 @@ font-family: "Lucida Console", Monaco, monospace;
 
 <script src="null.js"></script>
 
-<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 130px;">
+<div class = "top">
  <div style="position: absolute; bottom: 0; left: 0.5em; width: 200px; font-weight: bold; color: #fff;">
  <h2 style="color:white;font-size:1.8em;">ASLR combo with pie </h2>
  </div>
