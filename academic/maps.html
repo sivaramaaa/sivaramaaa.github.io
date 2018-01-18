@@ -1,94 +1,191 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Google Maps API</title>
+    <title>Place searches</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
        <style>
        #map {
+	float: left;
         height: 400px;
-        width: 100%;
+        width: 50%;
        }
+      #chart_div {
+	float: right;
+        height: 400px;
+        width: 50%;	
+     }	
     </style>
+      <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
       var map;
       var infowindow;
+      var type;
+      var places;
+      var array = new Array();
+      google.charts.load('current', {packages: ['corechart', 'bar']});
+      // google.charts.setOnLoadCallback(drawBasic);
  
-      function initMap() {
+      function initMap() 
+      {
         var india = {lat: 20.5937, lng: 78.9629};
-		map = new google.maps.Map(document.getElementById('map'), {
-          center: india,
-          zoom: 4
-        });
+		map = new google.maps.Map(document.getElementById('map'), {center: india, zoom: 4} );
  
       }
-	  
-	  function load()  {
+
+      function load()  
+      {
 		var latitude;
 		var longitude;
 		var geocoder = new google.maps.Geocoder();
 		var address = document.getElementById("options").value;
-		alert(address);
 		geocoder.geocode( { 'address': address}, function(results, status) {
 		if (status == google.maps.GeocoderStatus.OK) {
 			latitude = results[0].geometry.location.lat();
 			longitude = results[0].geometry.location.lng();
-			alert("inside : "+latitude);
+			set_places(latitude, longitude);
+			
 		} 
-		}); 
-		alert("outside : "+latitude);
-		var places = {lat: latitude, lng: longitude};
-		
+		});
+      }
+      //TODO: try to merge in load has some call bugs 
+
+      function set_places(latitude, longitude) 
+      {
+		places = {lat: latitude, lng: longitude};
 		map = new google.maps.Map(document.getElementById('map'), {
-          center: places,
-          zoom: 15
-        });
+		  center: places,
+		  zoom: 15
+		});
 		
-	    infowindow = new google.maps.InfoWindow();
-        var service = new google.maps.places.PlacesService(map);
-        service.nearbySearch({
-          location: places,
-          radius: 500,
-          type: ['store']
-        }, callback);
-	  
-	  }
-      function callback(results, status) {
-        if (status === google.maps.places.PlacesServiceStatus.OK) {
-          for (var i = 0; i < results.length; i++) {
-            createMarker(results[i]);
-          }
-        }
+		infowindow = new google.maps.InfoWindow();
+		var service = new google.maps.places.PlacesService(map);
+		service.nearbySearch({
+		  location: places,
+		  radius: 500,
+		  type: ['store']
+		}, callback);
+		
+		
+
+      }
+
+      function fetch_array (places) {
+
+	map = new google.maps.Map(document.getElementById('map'), {
+		  center: places,
+		  zoom: 15
+		});
+	type = 'store';
+	var service = new google.maps.places.PlacesService(map);
+	
+	service.nearbySearch({
+		  location: places,
+		  radius: 500,
+		  type: ['store']
+		}, appendres);
+
+
+	type = 'police';
+	var service = new google.maps.places.PlacesService(map);
+	
+	service.nearbySearch({
+		  location: places,
+		  radius: 500,
+		  type: ['police']
+		}, appendres);
+		
+		
+            
+      }
+
+      function appendres (results, status) {
+			
+		if (status === google.maps.places.PlacesServiceStatus.OK) {
+			alert(type);
+			alert(results.length);
+			array.push([type,results.length])
+			alert(array);
+		}
+	
+      }
+
+      function callback(results, status) 
+      {
+		if (status === google.maps.places.PlacesServiceStatus.OK) {
+		  for (var i = 0; i < results.length; i++) {
+		    createMarker(results[i]);
+		  }
+		}
       }
  
-      function createMarker(place) {
-        var placeLoc = place.geometry.location;
-        var marker = new google.maps.Marker({
-          map: map,
-          position: place.geometry.location
-        });
- 
-        google.maps.event.addListener(marker, 'click', function() {
-          infowindow.setContent(place.name);
-          infowindow.open(map, this);
-        });
+      function createMarker(place) 
+      {
+		var placeLoc = place.geometry.location;
+		var marker = new google.maps.Marker({
+		  map: map,
+		  position: place.geometry.location
+		});
+	 
+		google.maps.event.addListener(marker, 'click', function() {
+		  infowindow.setContent(place.name);
+		  infowindow.open(map, this);
+		});
       }
+
+	function drawBasic() {
+
+	      fetch_array (places);
+	      alert(array);
+
+	      var data = google.visualization.arrayToDataTable([
+		['type','no'],
+		array]);
+
+	      var options = {
+		title: 'Population of Largest U.S. Cities',
+		chartArea: {width: '50%'},
+		hAxis: {
+		  title: 'Total Population',
+		  minValue: 0
+		},
+		vAxis: {
+		  title: 'City'
+		}
+	      };
+
+	      var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+
+	      chart.draw(data, options);
+     }
+
+
     </script>
+
+
   </head>
   <body>
+
   <div id = "sel">
-  Select state :
-  <select id = "options" onchange="load()">
-  <option value="Defaulr">Default</option>
-  <option value="Coimbatore">Coimbatore</option>
-  <option value="Chennai">Chennai</option>
-  <option value="Delhi">Delhi</option>
-  <option value="Assam">Assam</option>
-</select>
+	  Select state :
+	  <select id = "options" onchange="load()">
+	  <option value="Defaulr">Default</option>
+	  <option value="Coimbatore">Coimbatore</option>
+	  <option value="Chennai">Chennai</option>
+	  <option value="Delhi">Delhi</option>
+	  <option value="Assam">Assam</option>
+	</select>
   </div>
   
   <br> <br>
+
+<button onclick= "drawBasic();"> Populate `</button>
+
     <div id="map"></div>
+    <div id="chart_div"></div>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDnOch6bZ9caoyLge5ZUPT3j22ZFcgcamI&libraries=places&callback=initMap" async defer></script>
+
+
+
   </body>
 </html>
