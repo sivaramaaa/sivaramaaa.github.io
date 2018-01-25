@@ -21,15 +21,18 @@
       var map;
       var infowindow;
       var type;
+      var data;
       var places;
-      var array = new Array();
+      var place_arr = ["store","police","airport","bank","atm","bus_station","cafe"];
+      var place_count = new Array();
+      var idx = 0;
       google.charts.load('current', {packages: ['corechart', 'bar']});
       // google.charts.setOnLoadCallback(drawBasic);
  
       function initMap() 
       {
         var india = {lat: 20.5937, lng: 78.9629};
-		map = new google.maps.Map(document.getElementById('map'), {center: india, zoom: 4} );
+	map = new google.maps.Map(document.getElementById('map'), {center: india, zoom: 4} );
  
       }
 
@@ -53,6 +56,7 @@
       function set_places(latitude, longitude) 
       {
 		places = {lat: latitude, lng: longitude};
+		fetch_array (places);
 		map = new google.maps.Map(document.getElementById('map'), {
 		  center: places,
 		  zoom: 15
@@ -71,48 +75,45 @@
       }
 
       function fetch_array (places) {
-
-	map = new google.maps.Map(document.getElementById('map'), {
-		  center: places,
-		  zoom: 15
-		});
-	type = 'store';
-	var service = new google.maps.places.PlacesService(map);
-	
-	service.nearbySearch({
-		  location: places,
-		  radius: 500,
-		  type: ['store']
-		}, appendres);
-
-
-	type = 'police';
-	var service = new google.maps.places.PlacesService(map);
-	
-	service.nearbySearch({
-		  location: places,
-		  radius: 500,
-		  type: ['police']
-		}, appendres);
-		
-		
-            
+		var map_1 = new google.maps.Map(document.getElementById('map'), {
+			  center: places,
+			  zoom: 15
+			});
+		var service = new google.maps.places.PlacesService(map_1);
+		for (i = 0; i < place_arr.length ; i++) {	
+			service.nearbySearch({
+				  location: places,
+				  radius: 500,
+				  type: [place_arr[i]]
+				}, appendres);
+		}
       }
 
+
+
+function alertWithoutNotice(){
+    setTimeout(function(){
+        alert("");
+    }, 950);
+}
+
+
+
       function appendres (results, status) {
-			
-		if (status === google.maps.places.PlacesServiceStatus.OK) {
-			alert(type);
-			alert(results.length);
-			array.push([type,results.length])
-			alert(array);
+		//alertWithoutNotice;
+		console.log(results.length);	
+		if (status == google.maps.places.PlacesServiceStatus.OK) {
+				place_count.push(results.length) ;
 		}
-	
+		else {
+			place_count.push(0) ;
+		}
       }
 
       function callback(results, status) 
       {
 		if (status === google.maps.places.PlacesServiceStatus.OK) {
+		  console.log("callback "+results.length);
 		  for (var i = 0; i < results.length; i++) {
 		    createMarker(results[i]);
 		  }
@@ -126,7 +127,6 @@
 		  map: map,
 		  position: place.geometry.location
 		});
-	 
 		google.maps.event.addListener(marker, 'click', function() {
 		  infowindow.setContent(place.name);
 		  infowindow.open(map, this);
@@ -134,23 +134,23 @@
       }
 
 	function drawBasic() {
-
-	      fetch_array (places);
-	      alert(array);
-
-	      var data = google.visualization.arrayToDataTable([
-		['type','no'],
-		array]);
-
+	      data = new google.visualization.DataTable();
+	      data.addColumn('string', 'Type');
+	      data.addColumn('number', 'Count');
+	      data.addRows(place_count.length);
+	      for (var i = 0; i < place_arr.length; i++) {
+		   data.setCell(i, 0,place_arr[i]);
+		   data.setCell(i, 1,place_count[i]);
+	      }
 	      var options = {
-		title: 'Population of Largest U.S. Cities',
+		title: 'Count of places',
 		chartArea: {width: '50%'},
 		hAxis: {
-		  title: 'Total Population',
+		  title: 'Type',
 		  minValue: 0
 		},
 		vAxis: {
-		  title: 'City'
+		  title: 'Count'
 		}
 	      };
 
@@ -179,11 +179,11 @@
   
   <br> <br>
 
-<button onclick= "drawBasic();"> Populate `</button>
+<button onclick= "drawBasic();">Populate</button>
 
     <div id="map"></div>
     <div id="chart_div"></div>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDnOch6bZ9caoyLge5ZUPT3j22ZFcgcamI&libraries=places&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDnOch6bZ9caoyLge5ZUPT3j22ZFcgcamI&libraries=places&callback=initMap"  async defer></script>
 
 
 
