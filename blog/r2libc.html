@@ -26,8 +26,6 @@
 	
 <div class = "top"></div>         
 
-<h1 class="post-title"> Return to libc exploit </h1>
-
 <div id="doc" class="markdown-body container-fluid comment-enabled" style="position: relative;"><h2 id="Return-to-libc-exploit">Return to libc exploit</h2><p>We use this to bypass NX (Non-executable stack)</p><p>The concept here is we overflow our buffer till eip then in eip we give system() -address that is libc then next four byte is dummy the next four byte is ‘/bin/sh’ adress</p><p>so our payload looks like this : Overflow_till_eip+System() {address} + “DUMMY”+&amp;{’/bin/sh’}</p><p><strong>Note:</strong> In this problem the input is got through read(), so u have to add ;cat to ur payload and u wont be able to see $ symbol in shell but still it’s shell :)</p><p><img src="https://raw.githubusercontent.com/sivaramaaa/sivaramaaa.github.io/master/images/r2libc.png" alt=""></p><h4 id="Revisting-after-2-years">Revisting (after 2 years)</h4><ul>
 <li>X86 32 bit calling convention explained!</li>
 </ul><p><img src="https://raw.githubusercontent.com/sivaramaaa/sivaramaaa.github.io/master/images/IMG_20181215_135437__01.jpg" alt="1"></p><p><img src="https://raw.githubusercontent.com/sivaramaaa/sivaramaaa.github.io/master/images/IMG_20181215_135445.jpg" alt="2"></p><ul>
